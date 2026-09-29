@@ -1,0 +1,2131 @@
+{
+  "devices": [],
+  "sectors": [
+    {
+      "name": "demo_shop_001_sector_F01",
+      "prefabRef": "",
+      "min": {
+        "x": -1033.4067548729752,
+        "y": 634.0,
+        "z": 11.8
+      },
+      "max": {
+        "x": -1026.4132451270248,
+        "y": 645.2793511266457,
+        "z": 16.0
+      },
+      "variants": [],
+      "variantIndices": [
+        0
+      ],
+      "category": "Interior",
+      "nodes": [
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1029.91,
+            "y": 635.7883333333333,
+            "z": 15.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.91,
+            "y": 635.7883333333333,
+            "z": 15.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_ceiling_01_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_ceiling_01_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\int\\int_ent_apartment_a\\int_ent_apartment_a_ceiling_frame_w500_l300_a_aa.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1029.91,
+            "y": 637.365,
+            "z": 15.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.91,
+            "y": 637.365,
+            "z": 15.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_ceiling_02_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_ceiling_02_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\int\\int_ent_apartment_a\\int_ent_apartment_a_ceiling_frame_w500_l300_a_aa.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": -0.7071067811865475
+          },
+          "streamingRefPoint": {
+            "x": -1032.4067548729752,
+            "y": 636.5766666666667,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1032.4067548729752,
+            "y": 636.5766666666667,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_door",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_door",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_door_w400_l20_h350_cu.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1029.91,
+            "y": 635.7883333333333,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.91,
+            "y": 635.7883333333333,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_floor_01_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_floor_01_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\int\\int_ent_apartment_a\\int_ent_apartment_a_ceiling_tiles_w500_l300_b_aa.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1029.91,
+            "y": 637.365,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.91,
+            "y": 637.365,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_floor_02_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_floor_02_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\int\\int_ent_apartment_a\\int_ent_apartment_a_ceiling_tiles_w500_l300_b_aa.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": -0.7071067811865475
+          },
+          "streamingRefPoint": {
+            "x": -1032.4067548729752,
+            "y": 636.5766666666667,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1032.4067548729752,
+            "y": 636.5766666666667,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_frame",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_frame",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\int\\int_ent_staircase_a\\int_ent_staircase_plaster_doorframe_a_l70.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 1.0,
+            "r": 6.123233995736766e-17
+          },
+          "streamingRefPoint": {
+            "x": -1028.9132451270248,
+            "y": 638.1533333333333,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1028.9132451270248,
+            "y": 638.1533333333333,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_wall_east_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_wall_east_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w300_h320_ba.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 1.0,
+            "r": 6.123233995736766e-17
+          },
+          "streamingRefPoint": {
+            "x": -1031.41,
+            "y": 638.1533333333333,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1031.41,
+            "y": 638.1533333333333,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_wall_east_02",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_wall_east_02",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w300_h320_ba.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1027.4132451270248,
+            "y": 636.5,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1027.4132451270248,
+            "y": 636.5,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_wall_north_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_wall_north_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w300_h320_ba.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1027.4132451270248,
+            "y": 638.0766666666667,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1027.4132451270248,
+            "y": 638.0766666666667,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_wall_north_02",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_wall_north_02",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w300_h320_ba.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1032.4067548729752,
+            "y": 635.5383333333333,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1032.4067548729752,
+            "y": 635.5383333333333,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_wall_south_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_wall_south_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w300_h320_ba.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1032.4067548729752,
+            "y": 637.615,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1032.4067548729752,
+            "y": 637.615,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_wall_south_02",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_wall_south_02",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w300_h320_ba.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 1.0,
+            "r": 6.123233995736766e-17
+          },
+          "streamingRefPoint": {
+            "x": -1028.9132451270248,
+            "y": 635.0,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1028.9132451270248,
+            "y": 635.0,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_wall_west_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_wall_west_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w300_h320_ba.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 1.0,
+            "r": 6.123233995736766e-17
+          },
+          "streamingRefPoint": {
+            "x": -1031.41,
+            "y": 635.0,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1031.41,
+            "y": 635.0,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_wall_west_02",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_wall_west_02",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w300_h320_ba.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1027.4132451270248,
+            "y": 636.5766666666667,
+            "z": 12.9,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1027.4132451270248,
+            "y": 636.5766666666667,
+            "z": 12.9,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R01_ARCH_window_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R01_ARCH_window_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\int\\int_ent_industrial_a\\int_ent_industrial_a_wall_mf_window_h200_l200_a.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1029.91,
+            "y": 639.1216666666667,
+            "z": 15.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.91,
+            "y": 639.1216666666667,
+            "z": 15.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R02_ARCH_ceiling_01_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R02_ARCH_ceiling_01_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\buildings\\steinbeck\\interior\\steinbeck_building_set_b_int_ceiling_gf_solid_w300_l300_h150_corner_convex_bp.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1029.91,
+            "y": 640.6983333333334,
+            "z": 15.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.91,
+            "y": 640.6983333333334,
+            "z": 15.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R02_ARCH_ceiling_02_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R02_ARCH_ceiling_02_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\buildings\\steinbeck\\interior\\steinbeck_building_set_b_int_ceiling_gf_solid_w300_l300_h150_corner_convex_bp.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": -0.7071067811865475
+          },
+          "streamingRefPoint": {
+            "x": -1031.3716037509719,
+            "y": 639.91,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1031.3716037509719,
+            "y": 639.91,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R02_ARCH_door",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R02_ARCH_door",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_door_w400_l20_h350_cu.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1029.91,
+            "y": 639.1216666666667,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.91,
+            "y": 639.1216666666667,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R02_ARCH_floor_01_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R02_ARCH_floor_01_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\city_center\\arasaka_tower\\interior\\lobby\\int_arasaka_tower_lobby_a_floor_a_l300_w300_triangle_a.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1029.91,
+            "y": 640.6983333333334,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.91,
+            "y": 640.6983333333334,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R02_ARCH_floor_02_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R02_ARCH_floor_02_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\city_center\\arasaka_tower\\interior\\lobby\\int_arasaka_tower_lobby_a_floor_a_l300_w300_triangle_a.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": -0.7071067811865475
+          },
+          "streamingRefPoint": {
+            "x": -1031.3716037509719,
+            "y": 639.91,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1031.3716037509719,
+            "y": 639.91,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R02_ARCH_frame",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R02_ARCH_frame",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\int\\int_ent_staircase_a\\int_ent_staircase_plaster_doorframe_a_l70.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 1.0,
+            "r": 6.123233995736766e-17
+          },
+          "streamingRefPoint": {
+            "x": -1029.91,
+            "y": 641.4866666666667,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.91,
+            "y": 641.4866666666667,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R02_ARCH_wall_east_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R02_ARCH_wall_east_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w300_h320_ba.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1028.448396249028,
+            "y": 639.8333333333334,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1028.448396249028,
+            "y": 639.8333333333334,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R02_ARCH_wall_north_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R02_ARCH_wall_north_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w300_h320_ba.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1028.448396249028,
+            "y": 641.41,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1028.448396249028,
+            "y": 641.41,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R02_ARCH_wall_north_02",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R02_ARCH_wall_north_02",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w300_h320_ba.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1031.3716037509719,
+            "y": 638.8716666666667,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1031.3716037509719,
+            "y": 638.8716666666667,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R02_ARCH_wall_south_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R02_ARCH_wall_south_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w300_h320_ba.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1031.3716037509719,
+            "y": 640.9483333333334,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1031.3716037509719,
+            "y": 640.9483333333334,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R02_ARCH_wall_south_02",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R02_ARCH_wall_south_02",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w300_h320_ba.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 1.0,
+            "r": 6.123233995736766e-17
+          },
+          "streamingRefPoint": {
+            "x": -1029.91,
+            "y": 638.3333333333334,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.91,
+            "y": 638.3333333333334,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R02_ARCH_wall_west_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R02_ARCH_wall_west_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w300_h320_ba.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1028.448396249028,
+            "y": 639.91,
+            "z": 12.9,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1028.448396249028,
+            "y": 639.91,
+            "z": 12.9,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R02_ARCH_window_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R02_ARCH_window_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\int\\int_ent_industrial_a\\int_ent_industrial_a_wall_mf_window_h200_l200_a.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1029.91,
+            "y": 642.7253244366772,
+            "z": 15.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.91,
+            "y": 642.7253244366772,
+            "z": 15.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R03_ARCH_ceiling_01_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R03_ARCH_ceiling_01_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\buildings\\steinbeck\\interior\\steinbeck_building_set_b_int_ceiling_gf_solid_w200_l200_h150_ca.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1029.91,
+            "y": 643.7613422299895,
+            "z": 15.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.91,
+            "y": 643.7613422299895,
+            "z": 15.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R03_ARCH_ceiling_02_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R03_ARCH_ceiling_02_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\buildings\\steinbeck\\interior\\steinbeck_building_set_b_int_ceiling_gf_solid_w200_l200_h150_ca.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": -0.7071067811865475
+          },
+          "streamingRefPoint": {
+            "x": -1030.813047778965,
+            "y": 643.2433333333333,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1030.813047778965,
+            "y": 643.2433333333333,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R03_ARCH_door",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R03_ARCH_door",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_door_w400_l20_h350_cu.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1029.91,
+            "y": 642.7253244366772,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.91,
+            "y": 642.7253244366772,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R03_ARCH_floor_01_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R03_ARCH_floor_01_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\int\\int_common_a\\int_common_a_ceiling_tiles_a_l200_w200_a.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1029.91,
+            "y": 643.7613422299895,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.91,
+            "y": 643.7613422299895,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R03_ARCH_floor_02_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R03_ARCH_floor_02_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\int\\int_common_a\\int_common_a_ceiling_tiles_a_l200_w200_a.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": -0.7071067811865475
+          },
+          "streamingRefPoint": {
+            "x": -1030.813047778965,
+            "y": 643.2433333333333,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1030.813047778965,
+            "y": 643.2433333333333,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R03_ARCH_frame",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R03_ARCH_frame",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\int\\int_ent_staircase_a\\int_ent_staircase_plaster_doorframe_a_l70.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 1.0,
+            "r": 6.123233995736766e-17
+          },
+          "streamingRefPoint": {
+            "x": -1029.756952221035,
+            "y": 644.2793511266457,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.756952221035,
+            "y": 644.2793511266457,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R03_ARCH_wall_east_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R03_ARCH_wall_east_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w150_h320_aw.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 1.0,
+            "r": 6.123233995736766e-17
+          },
+          "streamingRefPoint": {
+            "x": -1030.66,
+            "y": 644.2793511266457,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1030.66,
+            "y": 644.2793511266457,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R03_ARCH_wall_east_02",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R03_ARCH_wall_east_02",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w150_h320_aw.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1029.006952221035,
+            "y": 642.957315540021,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.006952221035,
+            "y": 642.957315540021,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R03_ARCH_wall_north_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R03_ARCH_wall_north_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w150_h320_aw.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1029.006952221035,
+            "y": 643.9933333333333,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.006952221035,
+            "y": 643.9933333333333,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R03_ARCH_wall_north_02",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R03_ARCH_wall_north_02",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w150_h320_aw.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1030.813047778965,
+            "y": 642.5595615897472,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1030.813047778965,
+            "y": 642.5595615897472,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R03_ARCH_wall_south_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R03_ARCH_wall_south_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w150_h320_aw.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 0.7071067811865476,
+            "r": 0.7071067811865476
+          },
+          "streamingRefPoint": {
+            "x": -1030.813047778965,
+            "y": 643.9271050769195,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1030.813047778965,
+            "y": 643.9271050769195,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R03_ARCH_wall_south_02",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R03_ARCH_wall_south_02",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w150_h320_aw.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 1.0,
+            "r": 6.123233995736766e-17
+          },
+          "streamingRefPoint": {
+            "x": -1029.756952221035,
+            "y": 642.207315540021,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1029.756952221035,
+            "y": 642.207315540021,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R03_ARCH_wall_west_01",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R03_ARCH_wall_west_01",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w150_h320_aw.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        },
+        {
+          "rotation": {
+            "i": 0.0,
+            "j": 0.0,
+            "k": 1.0,
+            "r": 6.123233995736766e-17
+          },
+          "streamingRefPoint": {
+            "x": -1030.66,
+            "y": 642.207315540021,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "uk10": 1040,
+          "position": {
+            "x": -1030.66,
+            "y": 642.207315540021,
+            "z": 12.0,
+            "w": 0.0
+          },
+          "nodeRef": "$/#demo_shop_001_demo_shop_001_F1_R03_ARCH_wall_west_02",
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "secondaryRange": 120,
+          "name": "[NCIG] demo_shop_001_F1_R03_ARCH_wall_west_02",
+          "type": "worldMeshNode",
+          "data": {
+            "castRayTracedLocalShadows": "Default",
+            "meshAppearance": {
+              "$storage": "string",
+              "$value": "default"
+            },
+            "castShadows": "Default",
+            "occluderType": "Default",
+            "mesh": {
+              "DepotPath": {
+                "$storage": "string",
+                "$value": "base\\environment\\architecture\\common\\tech_corridor\\tech_corridor_wall_solid_w150_h320_aw.mesh"
+              }
+            },
+            "windImpulseEnabled": 1,
+            "castLocalShadows": "Default",
+            "castRayTracedGlobalShadows": "Default"
+          },
+          "primaryRange": 100,
+          "uk11": 512
+        }
+      ],
+      "level": 1
+    }
+  ],
+  "name": "ncig_architecture_demo_shop_001",
+  "xlFormat": 0,
+  "version": "1.0.4",
+  "psEntries": []
+}

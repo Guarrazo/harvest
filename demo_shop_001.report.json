@@ -1,0 +1,32 @@
+{
+  "format": "ncig-native-architecture-v1",
+  "building_ids": [
+    "demo_shop_001"
+  ],
+  "building_count": 1,
+  "sector_count": 1,
+  "emitted_node_count": 42,
+  "emitted_nodes_by_building": {
+    "demo_shop_001": 42
+  },
+  "emitted_nodes_by_class": {
+    "ceiling_piece": 6,
+    "door_frame": 3,
+    "door_piece": 3,
+    "floor_piece": 6,
+    "wall_piece": 22,
+    "window_piece": 2
+  },
+  "source_mesh_template": {
+    "type": "worldMeshNode",
+    "uk10": 1040,
+    "uk11": 512,
+    "primaryRange": 100,
+    "secondaryRange": 120,
+    "mesh_template_resource": "base\\characters\\boss\\adam_smasher\\h0_001_mm_c__adam_smasher\\h0_001_mm_c__adam_smasher.mesh"
+  },
+  "bounds_validation_required": true,
+  "scale_policy": "assembly_scale_only",
+  "native_export_generated": true,
+  "note": "Each emitted mesh node is cloned from a real harvested worldMeshNode template; render/export-specific fields are preserved verbatim. Mesh bounds and placement correctness still require in-game validation."
+}

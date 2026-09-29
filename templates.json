@@ -1,0 +1,61 @@
+{
+  "format": "ncig-template-harvest-v1",
+  "root": "F:\\Games\\CP2077\\Cyberpunk 2077\\bin\\x64\\plugins\\cyber_engine_tweaks\\mods\\entSpawner",
+  "source_files": [
+    "export/ncig_probe_exported.json"
+  ],
+  "counts": {
+    "worldEntityNode": 1
+  },
+  "templates": {
+    "worldEntityNode": [
+      {
+        "scale": {
+          "y": 1,
+          "z": 1,
+          "x": 1
+        },
+        "type": "worldEntityNode",
+        "uk10": 1056,
+        "name": "[Entity Template] i1_090_wa_full__jewlery_earrings_03",
+        "rotation": {
+          "i": 0,
+          "k": 0.064181581139565,
+          "j": 0,
+          "r": 0.99793827533722
+        },
+        "primaryRange": 100,
+        "secondaryRange": 120,
+        "streamingRefPoint": {
+          "y": 1557.8220214844,
+          "w": 0,
+          "z": 31.378211975098,
+          "x": -1162.7174072266
+        },
+        "data": {
+          "entityTemplate": {
+            "DepotPath": {
+              "$type": "ResourcePath",
+              "$value": "base\\characters\\appearances\\corpse\\generated\\earring\\i1_090_wa_full__jewlery_earrings_03.ent",
+              "$storage": "string"
+            }
+          },
+          "appearanceName": {
+            "$type": "CName",
+            "$value": "default",
+            "$storage": "string"
+          }
+        },
+        "position": {
+          "y": 1557.8220214844,
+          "w": 0,
+          "z": 31.378211975098,
+          "x": -1162.7174072266
+        },
+        "nodeRef": "",
+        "uk11": 512,
+        "ncigSourceFile": "export/ncig_probe_exported.json"
+      }
+    ]
+  }
+}

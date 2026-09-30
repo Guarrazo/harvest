@@ -4,13 +4,14 @@ import copy
 import math
 from typing import Any
 
+from .interior_quality import door_opening_width
 from .reference_nodes import collision_node, quat_yaw
 
 FLOOR_HEIGHT = 3.2
 WALL_HEIGHT = 3.0
 WALL_THICKNESS = 0.12
 FLOOR_THICKNESS = 0.10
-DOOR_GAP = 1.0
+DOOR_GAP = 1.05
 
 
 def _with_template(template: dict[str, Any] | None, generated: dict[str, Any], *, name: str, node_ref: str, position: dict[str, float], rotation: dict[str, float]) -> dict[str, Any]:
@@ -64,6 +65,40 @@ def _wall_segments(start: float, length: float, opening: tuple[float, float] | N
     return out
 
 
+
+def _building_entry_opening(building: dict[str, Any], width: float, depth: float) -> tuple[str, tuple[float, float]] | None:
+    """Return the ground-floor exterior side/opening for a detected building entrance."""
+    ex = building.get("entry_local_x")
+    ey = building.get("entry_local_y")
+    if ex is None or ey is None:
+        return None
+
+    ex = float(ex)
+    ey = float(ey)
+    half_w, half_d = width * 0.5, depth * 0.5
+    distances = {
+        "north": abs(ey + half_d),
+        "south": abs(ey - half_d),
+        "west": abs(ex + half_w),
+        "east": abs(ex - half_w),
+    }
+    side = min(distances, key=distances.get)
+    requested = float(building.get("entry_width_m", 0.0) or 0.0)
+    gap = requested if requested > 0.0 else 1.2
+    gap = max(1.05, min(1.20, gap))
+
+    if side in {"north", "south"}:
+        center = max(0.0, min(width, ex + half_w))
+        length = width
+    else:
+        center = max(0.0, min(depth, ey + half_d))
+        length = depth
+    start = max(0.0, center - gap * 0.5)
+    end = min(length, center + gap * 0.5)
+    if end - start < 0.50:
+        return None
+    return side, (start, end)
+
 def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     building = layout.get("building", {})
     rooms = [r for r in layout.get("rooms", []) or [] if isinstance(r, dict)]
@@ -71,6 +106,7 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
 
     floors = sorted({int(r.get("floor", 0)) for r in rooms})
     floor_node_count = 0
+    perimeter_node_count = 0
     for floor in floors:
         floor_rooms = [r for r in rooms if int(r.get("floor", 0)) == floor]
         if not floor_rooms:
@@ -106,6 +142,48 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
         ))
         floor_node_count += 1
 
+        # Explicit perimeter collision is independent of room-shell coverage.
+        # On the ground floor, a detected exterior entrance is carved out so this
+        # collision layer does not seal the building shut.
+        if building_width > 0.0 and building_depth > 0.0:
+            half_w, half_d = building_width * 0.5, building_depth * 0.5
+            entry = _building_entry_opening(building, building_width, building_depth) if floor == 0 else None
+            perimeter = [
+                ("north", 0.0, -half_d, building_width, 0.0),
+                ("south", 0.0, half_d, building_width, 0.0),
+                ("west", -half_w, 0.0, building_depth, 90.0),
+                ("east", half_w, 0.0, building_depth, 90.0),
+            ]
+            for side, lx, ly, span, yaw_offset in perimeter:
+                opening = entry[1] if entry and entry[0] == side else None
+                for idx, (a, b) in enumerate(_wall_segments(0.0, span, opening), 1):
+                    if b - a <= 0.05:
+                        continue
+                    if side in {"north", "south"}:
+                        local = _world(
+                            building,
+                            -half_w + (a + b) * 0.5,
+                            ly,
+                            floor * FLOOR_HEIGHT + WALL_HEIGHT / 2,
+                        )
+                    else:
+                        local = _world(
+                            building,
+                            lx,
+                            -half_d + (a + b) * 0.5,
+                            floor * FLOOR_HEIGHT + WALL_HEIGHT / 2,
+                        )
+                    nodes.append(_box(
+                        template,
+                        name=f"[NCIG COLLISION] {ref_id}_F{floor + 1:02d}_perimeter_{side}_{idx}",
+                        ref=f"$/#{ref_id}_F{floor + 1:02d}_COLL_perimeter_{side}_{idx}",
+                        pos=local,
+                        half=((b - a) / 2, WALL_THICKNESS / 2, WALL_HEIGHT / 2),
+                        yaw=float(building.get("yaw_deg", 0.0)) + yaw_offset,
+                    ))
+                    perimeter_node_count += 1
+
+
     for room in rooms:
         rid = str(room.get("id"))
         floor = int(room.get("floor", 0))
@@ -113,7 +191,7 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
         w, d = float(room.get("width", 0.0)), float(room.get("depth", 0.0))
         zbase = floor * FLOOR_HEIGHT
 
-        gap = DOOR_GAP
+        gap = door_opening_width(w) or DOOR_GAP
         opening = (w / 2 - gap / 2, w / 2 + gap / 2)
         opening_side = "north" if ry < 0 else "south"
 
@@ -168,5 +246,6 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
         "node_count": len(nodes),
         "room_count": len(rooms),
         "floor_node_count": floor_node_count,
-        "policy": "continuous_floor_per_floor_plus_room_shell_walls_with_door_openings",
+        "perimeter_node_count": perimeter_node_count,
+        "policy": "continuous_floor_per_floor_plus_explicit_exterior_perimeter_plus_room_shell_walls_with_door_openings",
     }

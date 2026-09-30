@@ -1,3 +1,12 @@
+## v0.22.6
+
+- Correct the corridor/exterior collision orientation and add a solid collision header above 2.20 m door openings.
+- Set the default doorway to 1.25 m × 2.20 m and avoid emitting door leaves unless a collisionless variant is known.
+- Remove arbitrary generated facade windows; only windows discovered from exterior-sector evidence are emitted.
+- Carry detected facade openings and district information into building anchors.
+- Add district-aware, deterministic variation between compatible architecture kits.
+- Require multi-side architectural evidence and a sane geometry range before an automatic building candidate is marked fillable.
+- Improve exterior footprint estimation for wall/door/window meshes by treating filename dimensions according to structural semantics.
 ## v0.22.5
 
 - Fix collision doorway orientation: corridor-facing walls keep the walkable opening; exterior walls no longer get an accidental centered gap.

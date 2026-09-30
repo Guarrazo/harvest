@@ -8,7 +8,9 @@ $files = @(
   'src/ncig/cli.py',
   'src/ncig/__init__.py',
   'pyproject.toml',
-  'CHANGELOG.md'
+  'CHANGELOG.md',
+  'tools/architecture_geometry_diagnostic.py',
+  'tools/architecture_geometry_diagnostic_cp2077.cmd'
 )
 $stage = Join-Path $Root '.ncig_v0223_sync'
 if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }

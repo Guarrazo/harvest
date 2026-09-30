@@ -7,6 +7,7 @@ from typing import Any
 from .generator import world_pos
 from .architecture_geometry import compatible_family_candidates, dimension_hint_scale, planar_dimensions, rank_family_options, sane_dimensions
 from .model import Layout, Room, Vec3
+from .interior_quality import door_clearance_report, door_opening_width, filter_asset_candidates, choose_variety_index
 from .runtime_geometry import (
     align_node_local_position,
     linear_fit,
@@ -23,8 +24,10 @@ DEFAULT_DOOR_WIDTH = 1.0
 
 
 def _items(catalog: dict[str, Any], cls: str, family: str | None = None, building_type: str | None = None) -> list[dict[str, Any]]:
-    tokens = _style_tokens(building_type or "mixed")
-    return compatible_family_candidates(catalog, cls, family, building_tokens=tokens)
+    building_type = building_type or "mixed"
+    tokens = _style_tokens(building_type)
+    candidates = compatible_family_candidates(catalog, cls, family, building_tokens=tokens)
+    return filter_asset_candidates(candidates, cls=cls, building_type=building_type)
 
 
 def _style_tokens(building_type: str) -> tuple[str, ...]:
@@ -129,7 +132,8 @@ def _height_hint(item: dict[str, Any]) -> float | None:
 
 
 def _best_item(items: list[dict[str, Any]], *, target_length: float | None = None,
-               target_width: float | None = None, target_height: float | None = None) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+               target_width: float | None = None, target_height: float | None = None,
+               variety_key: str | None = None) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     if not items:
         return None, {"confidence": "none", "reason": "no_catalog_candidates"}
     ranked: list[tuple[float, int, str, dict[str, Any], dict[str, Any]]] = []
@@ -142,7 +146,7 @@ def _best_item(items: list[dict[str, Any]], *, target_length: float | None = Non
         required.append("height")
     for item in items:
         d = _dims(item)
-        score = float(item.get("score", 0))
+        score = float(item.get("score", 0)) + float((item.get("_ncig_quality") or {}).get("adjustment", 0.0))
         errors: list[float] = []
         missing = 0
         coverage = 0
@@ -190,9 +194,15 @@ def _best_item(items: list[dict[str, Any]], *, target_length: float | None = Non
                         "missing_dimensions": missing,
                         "dimension_coverage": coverage,
                         "required_dimensions": required,
-                        "dimension_source": "runtime_mesh_resource" if isinstance(item.get("bounds"), dict) else "filename_hint"}))
+                        "dimension_source": "runtime_mesh_resource" if isinstance(item.get("bounds"), dict) else "filename_hint",
+                        "asset_quality": item.get("_ncig_quality") or {}}))
     ranked.sort(key=lambda x: (x[0], x[1], x[2], str(x[3].get("path", ""))))
-    _, _, _, chosen, info = ranked[0]
+    if variety_key and len(ranked) > 1:
+        pool_size = max(1, min(len(ranked), max(2, len(ranked) // 4)))
+        chosen_row = ranked[choose_variety_index(variety_key, pool_size)]
+    else:
+        chosen_row = ranked[0]
+    _, _, _, chosen, info = chosen_row
     return chosen, info
 
 
@@ -301,7 +311,7 @@ def _wall_run(layout: Layout, room: Room, catalog: dict[str, Any], placements: l
               side: str, x0: float, y0: float, length: float, rotation_deg: float,
               opening: tuple[float, float] | None = None, family: str | None = None) -> None:
     candidates = _items(catalog, "wall_piece", family, layout.building.type)
-    item, info = _best_item(candidates, target_length=min(length, 3.0), target_height=3.0)
+    item, info = _best_item(candidates, target_length=min(length, 3.0), target_height=3.0, variety_key=f"{room.id}:{side}")
     if item is None:
         return
     piece = _length_hint(item) or min(length, 3.0)
@@ -356,7 +366,8 @@ def _wall_run(layout: Layout, room: Room, catalog: dict[str, Any], placements: l
 
 
 def _door_and_frame(layout: Layout, room: Room, catalog: dict[str, Any], placements: list[dict[str, Any]], frame_family: str | None, door_family: str | None) -> tuple[tuple[float, float], str]:
-    gap = min(DEFAULT_DOOR_WIDTH, room.width * 0.32)
+    gap = door_opening_width(room.width)
+    clearance = door_clearance_report(gap)
     room_center_x = room.x + room.width / 2.0
     if room.y >= 0:
         y, side, rotation = room.y, "south", 0.0
@@ -364,8 +375,8 @@ def _door_and_frame(layout: Layout, room: Room, catalog: dict[str, Any], placeme
         y, side, rotation = room.y + room.depth, "north", 180.0
     center = room_center_x - room.x
     opening = (center - gap / 2.0, center + gap / 2.0)
-    frame, finfo = _best_item(_items(catalog, "door_frame", frame_family, layout.building.type), target_length=gap, target_height=2.1)
-    door, dinfo = _best_item(_items(catalog, "door_piece", door_family, layout.building.type), target_length=gap, target_height=2.1)
+    frame, finfo = _best_item(_items(catalog, "door_frame", frame_family, layout.building.type), target_length=gap, target_height=2.1, variety_key=f"{room.id}:door_frame")
+    door, dinfo = _best_item(_items(catalog, "door_piece", door_family, layout.building.type), target_length=gap, target_height=2.1, variety_key=f"{room.id}:door_piece")
     for suffix, cls, item, info in (("frame", "door_frame", frame, finfo), ("door", "door_piece", door, dinfo)):
         if item is None:
             continue

@@ -173,7 +173,7 @@ def _has_token(text: str, tokens: Iterable[str]) -> bool:
     return any(token in text for token in tokens)
 
 
-_DIMENSION_RE = re.compile(r"(?:^|[_-])([lwh])([0-9]+(?:\\.[0-9]+)?)(?=$|[_-])", re.IGNORECASE)
+_DIMENSION_RE = re.compile(r"(?:^|[_-])([lwh])([0-9]+(?:\.[0-9]+)?)(?=$|[_-])", re.IGNORECASE)
 
 
 def _node_yaw(node: dict[str, Any]) -> float:
@@ -211,7 +211,7 @@ def _node_scale(node: dict[str, Any]) -> tuple[float, float, float]:
 
 
 def _resource_dimensions(path: str) -> dict[str, float]:
-    stem = Path(path.replace("\\\\", "/")).stem.lower()
+    stem = Path(path.replace("\\", "/")).stem.lower()
     out: dict[str, float] = {}
     for match in _DIMENSION_RE.finditer(stem):
         out.setdefault(match.group(1).lower(), float(match.group(2)) / 100.0)
@@ -243,7 +243,7 @@ def _is_architecture(record: dict[str, Any]) -> bool:
     text = str(record.get("text", "")).lower()
     if _has_token(text, _EXTERIOR_NEGATIVE):
         return False
-    return "\\\\environment\\\\architecture\\\\" in resource or _has_token(text, _BUILDING_TOKENS)
+    return "\\environment\\architecture\\" in resource or _has_token(text, _BUILDING_TOKENS)
 
 
 def _is_entrance(record: dict[str, Any]) -> bool:
@@ -252,7 +252,7 @@ def _is_entrance(record: dict[str, Any]) -> bool:
 
 
 def _is_interior(record: dict[str, Any]) -> bool:
-    text = str(record.get("text", "")).lower().replace("/", "\\\\")
+    text = str(record.get("text", "")).lower().replace("/", "\\")
     if _has_token(text, _INTERIOR_TOKENS):
         return True
     category = str(record.get("category", "")).lower()

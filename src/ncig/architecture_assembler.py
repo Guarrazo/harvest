@@ -785,20 +785,34 @@ def assemble_room(layout: Layout, room: Room, catalog: dict[str, Any], family: s
                      length=room.width, opening=door_gap, family=wall_family)
     peers = floor_rooms or [room]
     if not _has_neighbor(room, peers, "west"):
-        _wall_run(layout, room, catalog, placements, side="west", x0=room.x, y0=room.y,
-                  length=room.depth, rotation_deg=90.0,
-                  opening=entry_gap if entry_side == "west" else None, family=wall_family)
+        _wall_run(
+            layout, room, catalog, placements,
+            side="west", x0=room.x, y0=room.y,
+            length=room.depth, rotation_deg=90.0,
+            opening=entry_gap if entry_side == "west" else None,
+            family=wall_family,
+        )
         if entry_gap is not None and entry_side == "west":
-            _wall_header(layout, room, catalog, placements, side="west", x0=room.x, y0=room.y,
-                         length=room.depth, opening=entry_gap, family=wall_family)
-    else:
-        pass
-    _wall_run(layout, room, catalog, placements, side="east", x0=room.x + room.width, y0=room.y,
-
+            _wall_header(
+                layout, room, catalog, placements,
+                side="west", x0=room.x, y0=room.y,
+                length=room.depth, opening=entry_gap,
+                family=wall_family,
+            )
+    _wall_run(
+        layout, room, catalog, placements,
+        side="east", x0=room.x + room.width, y0=room.y,
+        length=room.depth, rotation_deg=90.0,
+        opening=entry_gap if entry_side == "east" else None,
+        family=wall_family,
+    )
     if entry_gap is not None and entry_side == "east":
-        _wall_header(layout, room, catalog, placements, side="east", x0=room.x + room.width, y0=room.y,
-                     length=room.depth, opening=entry_gap, family=wall_family)              length=room.depth, rotation_deg=90.0,
-              opening=entry_gap if entry_side == "east" else None, family=wall_family)
+        _wall_header(
+            layout, room, catalog, placements,
+            side="east", x0=room.x + room.width, y0=room.y,
+            length=room.depth, opening=entry_gap,
+            family=wall_family,
+        )
     _window(layout, room, catalog, placements, fm.get("window_piece", family))
     return placements
 

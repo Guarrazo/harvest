@@ -170,19 +170,24 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
         entry_side: str | None = None
         if floor == 0 and building.get("entry_local_x") is not None and building.get("entry_local_y") is not None:
             ex, ey = float(building["entry_local_x"]), float(building["entry_local_y"])
-            distances = {
-                "north": abs(ey - ry),
-                "south": abs(ey - (ry + d)),
-                "west": abs(ex - rx),
-                "east": abs(ex - (rx + w)),
-            }
-            entry_side = min(distances, key=distances.get)
-            if entry_side in {"north", "south"}:
-                c = max(gap * 0.5, min(w - gap * 0.5, ex - rx))
-            else:
-                gap = min(DOOR_GAP, d * 0.40 if d > 0 else DOOR_GAP)
-                c = max(gap * 0.5, min(d - gap * 0.5, ey - ry))
-            entry_opening = (c - gap * 0.5, c + gap * 0.5)
+            closest_x = max(rx, min(ex, rx + w))
+            closest_y = max(ry, min(ey, ry + d))
+            entry_distance = math.hypot(ex - closest_x, ey - closest_y)
+            # Only the room touched by the detected entrance owns the external opening.
+            if entry_distance <= 1.6:
+                distances = {
+                    "north": abs(ey - ry),
+                    "south": abs(ey - (ry + d)),
+                    "west": abs(ex - rx),
+                    "east": abs(ex - (rx + w)),
+                }
+                entry_side = min(distances, key=distances.get)
+                if entry_side in {"north", "south"}:
+                    c = max(gap * 0.5, min(w - gap * 0.5, ex - rx))
+                else:
+                    gap = min(DOOR_GAP, d * 0.40 if d > 0 else DOOR_GAP)
+                    c = max(gap * 0.5, min(d - gap * 0.5, ey - ry))
+                entry_opening = (c - gap * 0.5, c + gap * 0.5)
 
         for side in ("north", "south", "west", "east"):
             if side == "north":
@@ -202,7 +207,7 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
                     center_axis = (active_opening[0] + active_opening[1]) * 0.5
                     _append_header_collision(
                         nodes, template, building=building, rid=rid, side=side, floor=floor,
-                        center_axis=center_axis, gap=active_opening[1] - active_opening[0],
+                        gap=active_opening[1] - active_opening[0],
                         x=rx + center_axis, y=ry,
                     )
             elif side == "south":

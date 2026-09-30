@@ -121,7 +121,7 @@ def build_native_composition(
             ref = str(node.get("nodeRef", ""))
             floor = 0
             # Refs use <building>_<room>_COLL_... and room IDs contain F##.
-            match = re.search(r"_f(\d{1,2})_r", ref, re.IGNORECASE)
+            match = re.search(r"_f(\d{1,2})(?:_r|_coll_floor)", ref, re.IGNORECASE)
             if match:
                 floor = max(0, int(match.group(1)) - 1)
             by_coll_floor.setdefault(floor, []).append(node)

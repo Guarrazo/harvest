@@ -1,4 +1,4 @@
-from ncig.architecture_geometry import planar_dimensions, family_candidates
+from ncig.architecture_geometry import planar_dimensions, family_candidates, derive_family
 
 
 def test_wall_filename_uses_w_as_visible_span_when_l_is_absent():
@@ -50,3 +50,13 @@ def test_runtime_pivot_alignment_uses_real_bbox_center():
     item = {"bounds": {"min": {"x": 1.0, "y": 2.0, "z": 0.0}, "max": {"x": 3.0, "y": 4.0, "z": 2.0}, "dimensions_m": {"x": 2.0, "y": 2.0, "z": 2.0}}}
     pos = align_node_local_position(item, {"x": 1.0, "y": 1.0, "z": 1.0}, 0.0, (0.0, 0.0, 1.0))
     assert pos == (-2.0, -3.0, 0.0)
+
+
+def test_derive_family_never_uses_mesh_filename_for_flat_architecture_folder():
+    path = r"base\environment\architecture\common\tech_corridor\tech_corridor_wall_solid_w300_h320_ba.mesh"
+    assert derive_family(path) == "common/tech_corridor"
+
+
+def test_derive_family_keeps_interior_kit_directory_identity():
+    path = r"base\environment\architecture\common\int\int_ent_staircase_a\int_ent_staircase_plaster_doorframe_a_l70.mesh"
+    assert derive_family(path) == "common/int/int_ent_staircase_a"

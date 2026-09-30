@@ -20,14 +20,26 @@ from .runtime_geometry import (
 FORMAT = "ncig-architecture-assembly-v1"
 FLOOR_HEIGHT = 3.2
 CEILING_Z = 3.0
-DEFAULT_DOOR_WIDTH = 1.0
+DEFAULT_DOOR_WIDTH = 1.2
 
 
-def _items(catalog: dict[str, Any], cls: str, family: str | None = None, building_type: str | None = None) -> list[dict[str, Any]]:
+def _items(
+    catalog: dict[str, Any],
+    cls: str,
+    family: str | None = None,
+    building_type: str | None = None,
+    *,
+    room_kind: str | None = None,
+) -> list[dict[str, Any]]:
     building_type = building_type or "mixed"
     tokens = _style_tokens(building_type)
     candidates = compatible_family_candidates(catalog, cls, family, building_tokens=tokens)
-    return filter_asset_candidates(candidates, cls=cls, building_type=building_type)
+    return filter_asset_candidates(
+        candidates,
+        cls=cls,
+        building_type=building_type,
+        room_kind=room_kind,
+    )
 
 
 def _style_tokens(building_type: str) -> tuple[str, ...]:
@@ -38,6 +50,63 @@ def _style_tokens(building_type: str) -> tuple[str, ...]:
         "industrial": ("industrial", "factory", "warehouse", "workshop", "garage"),
         "mixed": ("shop", "office", "apartment", "common\\int"),
     }.get(building_type, ("int",))
+
+
+def _door_candidate_pool(
+    candidates_or_catalog: dict[str, Any] | list[dict[str, Any]],
+    *,
+    cls: str = "door_piece",
+    family: str | None = None,
+    building_type: str = "mixed",
+    room_kind: str | None = None,
+    target_width: float = DEFAULT_DOOR_WIDTH,
+    target_height: float = 2.1,
+) -> list[dict[str, Any]]:
+    """Return door/frame candidates that can fit without extreme down-scaling.
+
+    Security/gate assets are excluded for ordinary rooms, but remain valid for explicit
+    security/checkpoint rooms. Candidates with dimensions unavailable are retained.
+    """
+    if isinstance(candidates_or_catalog, dict):
+        candidates = _items(
+            candidates_or_catalog,
+            cls,
+            family,
+            building_type,
+            room_kind=room_kind,
+        )
+    else:
+        candidates = list(candidates_or_catalog)
+
+    security_room = str(room_kind or "").lower() in {
+        "security", "checkpoint", "guard", "guardroom", "security_room"
+    }
+    out: list[dict[str, Any]] = []
+    max_source_width = float(target_width) / 0.72 if target_width > 0 else float("inf")
+    max_source_height = float(target_height) / 0.80 if target_height > 0 else float("inf")
+    for item in candidates:
+        text = " ".join(
+            str(v) for v in (
+                item.get("path"),
+                item.get("family"),
+                *(item.get("signals") or []),
+                *(item.get("roles") or []),
+            )
+        ).lower()
+        security_asset = any(token in text for token in (
+            "security", "checkpoint", "guard", "gate", "grille", "grating", "bars", "barred"
+        ))
+        if security_asset and not security_room:
+            continue
+
+        span = _length_hint(item)
+        height = _height_hint(item)
+        if span is not None and span > max_source_width:
+            continue
+        if height is not None and height > max_source_height:
+            continue
+        out.append(item)
+    return out or candidates
 
 
 def choose_architecture_family(catalog: dict[str, Any], building_type: str) -> tuple[str | None, dict[str, Any]]:
@@ -375,8 +444,26 @@ def _door_and_frame(layout: Layout, room: Room, catalog: dict[str, Any], placeme
         y, side, rotation = room.y + room.depth, "north", 180.0
     center = room_center_x - room.x
     opening = (center - gap / 2.0, center + gap / 2.0)
-    frame, finfo = _best_item(_items(catalog, "door_frame", frame_family, layout.building.type), target_length=gap, target_height=2.1, variety_key=f"{room.id}:door_frame")
-    door, dinfo = _best_item(_items(catalog, "door_piece", door_family, layout.building.type), target_length=gap, target_height=2.1, variety_key=f"{room.id}:door_piece")
+    frame_candidates = _door_candidate_pool(
+        catalog,
+        cls="door_frame",
+        family=frame_family,
+        building_type=layout.building.type,
+        room_kind=room.kind,
+        target_width=gap,
+        target_height=2.1,
+    )
+    door_candidates = _door_candidate_pool(
+        catalog,
+        cls="door_piece",
+        family=door_family,
+        building_type=layout.building.type,
+        room_kind=room.kind,
+        target_width=gap,
+        target_height=2.1,
+    )
+    frame, finfo = _best_item(frame_candidates, target_length=gap, target_height=2.1, variety_key=f"{room.id}:door_frame")
+    door, dinfo = _best_item(door_candidates, target_length=gap, target_height=2.1, variety_key=f"{room.id}:door_piece")
     for suffix, cls, item, info in (("frame", "door_frame", frame, finfo), ("door", "door_piece", door, dinfo)):
         if item is None:
             continue
@@ -531,6 +618,7 @@ def build_architecture_assembly(layouts: list[Layout], catalog: dict[str, Any]) 
     buildings: list[dict[str, Any]] = []
     for layout in layouts:
         all_placements: list[dict[str, Any]] = []
+        district=getattr(layout.building, "district", "unknown")
         family, family_info = choose_architecture_family(catalog, str(layout.building.type))
         class_families, class_family_info = choose_class_families(catalog, family, str(layout.building.type))
         floors = sorted({int(r.floor) for r in layout.rooms})
@@ -548,6 +636,7 @@ def build_architecture_assembly(layouts: list[Layout], catalog: dict[str, Any]) 
                 unresolved.append(p["id"])
         buildings.append({
             "id": layout.building.id,
+            "district": district,
             "floors": layout.building.floors,
             "rooms": len(layout.rooms),
             "placements": all_placements,

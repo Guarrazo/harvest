@@ -74,48 +74,65 @@ def sane_dimensions(item: dict[str, Any], cls: str) -> bool:
 
 
 def dimension_hint_scale(item: dict[str, Any], cls: str, target: dict[str, float]) -> dict[str, float] | None:
-    """Return a bounded scale inferred from complete filename dimensions.
+    """Return a bounded scale from filename dimensions, including partial hints.
 
-    This is intentionally more conservative than runtime bounds: it only applies
-    directional fitting when all required dimensions are present and the requested
-    deformation stays within a narrow range. Runtime bounds remain authoritative.
+    Runtime bounds are authoritative. Filename hints may be incomplete, but when the
+    dimensions needed by the requested fit are present we can still scale only those
+    axes and leave the unknown axes unchanged.
     """
-    if isinstance(item.get('bounds'), dict):
+    if isinstance(item.get("bounds"), dict):
         if cls in {'wall_piece', 'door_frame', 'door_piece', 'window_piece'}:
             span = planar_dimensions(item, cls)[0]
             height = planar_dimensions(item, cls)[2]
             desired_span = float(target.get('span', span or 0.0))
             desired_height = float(target.get('height', height or 0.0))
-            if not span or not height or desired_span <= 0 or desired_height <= 0:
+            sx = desired_span / span if span and desired_span > 0 else 1.0
+            sz = desired_height / height if height and desired_height > 0 else 1.0
+            if not span and not height:
                 return None
-            return {'x': desired_span / span, 'y': 1.0, 'z': desired_height / height}
+            if span and desired_span > 0 and not (0.72 <= sx <= 1.28):
+                return None
+            if height and desired_height > 0 and not (0.80 <= sz <= 1.20):
+                return None
+            return {'x': sx, 'y': 1.0, 'z': sz}
         span, secondary, _ = planar_dimensions(item, cls)
         desired_x = float(target.get('x', span or 0.0))
         desired_y = float(target.get('y', secondary or 0.0))
-        if not span or not secondary or desired_x <= 0 or desired_y <= 0:
+        sx = desired_x / span if span and desired_x > 0 else 1.0
+        sy = desired_y / secondary if secondary and desired_y > 0 else 1.0
+        if not span and not secondary:
             return None
-        return {'x': desired_x / span, 'y': desired_y / secondary, 'z': 1.0}
+        if span and desired_x > 0 and not (0.72 <= sx <= 1.28):
+            return None
+        if secondary and desired_y > 0 and not (0.72 <= sy <= 1.28):
+            return None
+        return {'x': sx, 'y': sy, 'z': 1.0}
+
     dims = item.get('dimensions') or {}
-    if not bool(dims.get('complete')):
-        return None
     span, secondary, height = planar_dimensions(item, cls)
+
     if cls in {'wall_piece', 'door_frame', 'door_piece', 'window_piece'}:
         desired_span = float(target.get('span', span or 0.0))
         desired_height = float(target.get('height', height or 0.0))
-        if not span or not height or desired_span <= 0 or desired_height <= 0:
+        sx = desired_span / span if span and desired_span > 0 else 1.0
+        sz = desired_height / height if height and desired_height > 0 else 1.0
+        if not span and not height:
             return None
-        sx = desired_span / span
-        sz = desired_height / height
-        if not (0.72 <= sx <= 1.28 and 0.80 <= sz <= 1.20):
+        if span and desired_span > 0 and not (0.72 <= sx <= 1.28):
+            return None
+        if height and desired_height > 0 and not (0.80 <= sz <= 1.20):
             return None
         return {'x': sx, 'y': 1.0, 'z': sz}
+
     desired_x = float(target.get('x', span or 0.0))
     desired_y = float(target.get('y', secondary or 0.0))
-    if not span or not secondary or desired_x <= 0 or desired_y <= 0:
+    sx = desired_x / span if span and desired_x > 0 else 1.0
+    sy = desired_y / secondary if secondary and desired_y > 0 else 1.0
+    if not span and not secondary:
         return None
-    sx = desired_x / span
-    sy = desired_y / secondary
-    if not (0.72 <= sx <= 1.28 and 0.72 <= sy <= 1.28):
+    if span and desired_x > 0 and not (0.72 <= sx <= 1.28):
+        return None
+    if secondary and desired_y > 0 and not (0.72 <= sy <= 1.28):
         return None
     return {'x': sx, 'y': sy, 'z': 1.0}
 

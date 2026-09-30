@@ -459,6 +459,30 @@ def detect_building_candidates(records: list[dict[str, Any]], *, cluster_radius_
                 if token in token_text:
                     token_counts[token] += 1
 
+        wall_records = [r for r in nearby if _record_kind(r) == "wall"]
+        wall_sides: set[str] = set()
+        for wr in wall_records:
+            wx, wy = float(wr["x"]), float(wr["y"])
+            local_x = (wx - center_x) * ct + (wy - center_y) * st
+            local_y = -(wx - center_x) * st + (wy - center_y) * ct
+            half_w, half_d = width * 0.5, depth * 0.5
+            dists = {
+                "north": abs(local_y + half_d),
+                "south": abs(local_y - half_d),
+                "west": abs(local_x + half_w),
+                "east": abs(local_x - half_w),
+            }
+            wall_sides.add(min(dists, key=dists.get))
+        wall_count = len(wall_records)
+        geometry_ready = (
+            wall_count >= 2
+            and len(wall_sides) >= 2
+            and 4.5 <= width <= 32.0
+            and 4.5 <= depth <= 32.0
+            and 3.2 <= height <= 64.0
+            and floors <= 20
+        )
+
         detected_openings: list[dict[str, Any]] = []
         for wr in [r for r in nearby if _is_window(r)]:
             theta_w = math.radians(float(yaw_deg))
@@ -537,6 +561,9 @@ def detect_building_candidates(records: list[dict[str, Any]], *, cluster_radius_
             "evidence": {
                 "architecture_nodes": len(nearby),
                 "entrance_nodes": len(entrance_group),
+                "wall_nodes": wall_count,
+                "wall_sides": sorted(wall_sides),
+                "geometry_ready": geometry_ready,
                 "interior_nodes": len(interiors),
                 "sectors": sorted({str(r.get("sector")) for r in group}),
                 "source_files": sorted({str(r.get("source_file")) for r in group}),
@@ -544,7 +571,7 @@ def detect_building_candidates(records: list[dict[str, Any]], *, cluster_radius_
                 "negative_exterior_signals": negative,
                 "geometry_estimated_from": "node_position_plus_filename_lwh_hints_when_available",
             },
-            "suggested_action": "fill" if confidence in {"high", "medium"} and not interiors else "review",
+            "suggested_action": "fill" if confidence in {"high", "medium"} and geometry_ready and not interiors else "review",
         })
     candidates.sort(key=lambda c: (-int(c["score"]), c["id"]))
     return {

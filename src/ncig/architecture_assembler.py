@@ -43,6 +43,18 @@ _STYLE_EXCLUDE = {
     "window_piece": ("stair", "staircase", "railing", "fence", "cage", "prison", "cell"),
 }
 
+_DISTRICT_STYLE_TOKENS = {
+    "watson": ("common", "nkt", "kts", "tech"),
+    "westbrook": ("common", "nkt", "jp", "arasaka"),
+    "heywood": ("common", "ent", "apartment", "urban"),
+    "santo_domingo": ("common", "ent", "industrial", "mlt"),
+    "pacifica": ("common", "coast", "mall", "ent"),
+    "city_center": ("common", "arasaka", "office", "corporate"),
+    "dogtown": ("common", "dog", "industrial", "ent"),
+    "badlands": ("common", "industrial", "warehouse"),
+}
+
+
 def _style_safe_items(items: list[dict[str, Any]], cls: str) -> list[dict[str, Any]]:
     banned = _STYLE_EXCLUDE.get(cls, ())
     safe = [
@@ -50,8 +62,23 @@ def _style_safe_items(items: list[dict[str, Any]], cls: str) -> list[dict[str, A
         if not any(token in (str(item.get("path", "")) + " " + str(item.get("family", ""))).lower() for token in banned)
     ]
     return safe or items
-def _items(catalog: dict[str, Any], cls: str, family: str | None = None, building_type: str | None = None) -> list[dict[str, Any]]:
-    tokens = _style_tokens(building_type or "mixed")
+
+
+def _style_tokens(building_type: str, district: str | None = None) -> tuple[str, ...]:
+    base = {
+        "commercial": ("shop", "store", "market", "retail", "mall", "restaurant", "bar", "int"),
+        "residential": ("apartment", "res", "housing", "home", "flat", "common\\int"),
+        "office": ("office", "corp", "corporate", "business", "int"),
+        "industrial": ("industrial", "factory", "warehouse", "workshop", "garage"),
+        "mixed": ("shop", "office", "apartment", "common\\int"),
+    }.get(building_type, ("int",))
+    extra = _DISTRICT_STYLE_TOKENS.get(str(district or "").lower(), ())
+    return tuple(dict.fromkeys((*base, *extra)))
+
+
+def _items(catalog: dict[str, Any], cls: str, family: str | None = None, building_type: str | None = None,
+           district: str | None = None) -> list[dict[str, Any]]:
+    tokens = _style_tokens(building_type or "mixed", district)
     return compatible_family_candidates(catalog, cls, family, building_tokens=tokens)
 
 
@@ -122,8 +149,8 @@ def _entry_door_and_frame(
     opening = (center - gap * 0.5, center + gap * 0.5)
     frame_family = wall_family
     door_family = wall_family
-    frame_items = _style_safe_items(_items(catalog, "door_frame", frame_family, layout.building.type), "door_frame")
-    door_items = _style_safe_items(_items(catalog, "door_piece", door_family, layout.building.type), "door_piece")
+    frame_items = _style_safe_items(_items(catalog, "door_frame", frame_family, layout.building.type, layout.building.district), "door_frame")
+    door_items = _style_safe_items(_items(catalog, "door_piece", door_family, layout.building.type, layout.building.district), "door_piece")
     frame, finfo = _best_item(frame_items, target_length=gap, target_height=DEFAULT_DOOR_HEIGHT)
     door, dinfo = _best_item(door_items, target_length=gap, target_height=DEFAULT_DOOR_HEIGHT)
     # Structural door leaves can carry their own collision even when the doorway shell
@@ -175,7 +202,7 @@ def _style_tokens(building_type: str) -> tuple[str, ...]:
     }.get(building_type, ("int",))
 
 
-def choose_architecture_family(catalog: dict[str, Any], building_type: str) -> tuple[str | None, dict[str, Any]]:
+def choose_architecture_family(catalog: dict[str, Any], building_type: str, district: str | None = None) -> tuple[str | None, dict[str, Any]]:
     """Pick one architectural kit family for a whole building, rather than one unrelated family per piece."""
     items = [x for x in catalog.get("items", []) if isinstance(x, dict) and x.get("class")]
     by_family: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -187,7 +214,7 @@ def choose_architecture_family(catalog: dict[str, Any], building_type: str) -> t
     core = ("floor_piece", "wall_piece", "ceiling_piece")
     secondary = ("door_frame", "door_piece", "window_piece")
     candidates: list[tuple[float, str, dict[str, Any]]] = []
-    tokens = _style_tokens(building_type)
+    tokens = _style_tokens(building_type, district)
     for family, family_items in by_family.items():
         classes = {str(x.get("class")) for x in family_items}
         core_cov = sum(1 for cls in core if cls in classes)
@@ -222,8 +249,8 @@ def choose_architecture_family(catalog: dict[str, Any], building_type: str) -> t
 
 
 
-def choose_class_families(catalog: dict[str, Any], primary_family: str | None, building_type: str) -> tuple[dict[str, str], dict[str, Any]]:
-    tokens = _style_tokens(building_type)
+def choose_class_families(catalog: dict[str, Any], primary_family: str | None, building_type: str, district: str | None = None) -> tuple[dict[str, str], dict[str, Any]]:
+    tokens = _style_tokens(building_type, district)
     classes = (
         "floor_piece", "wall_piece", "ceiling_piece", "door_frame", "door_piece",
         "window_piece", "pillar_piece", "stairs_piece", "rail_piece", "trim_piece",
@@ -404,7 +431,7 @@ def _floor_surface(layout: Layout, floor_rooms: list[Room], catalog: dict[str, A
     min_x, max_x, min_y, max_y = _floor_bounds(floor_rooms, layout.building)
     width, depth = max_x - min_x, max_y - min_y
     floor = floor_rooms[0].floor
-    item, info = _best_item(_items(catalog, "floor_piece", family, layout.building.type),
+    item, info = _best_item(_items(catalog, "floor_piece", family, layout.building.type, layout.building.district),
                             target_length=width, target_width=depth)
     if item is None:
         return
@@ -438,7 +465,7 @@ def _floor_surface(layout: Layout, floor_rooms: list[Room], catalog: dict[str, A
 def _wall_run(layout: Layout, room: Room, catalog: dict[str, Any], placements: list[dict[str, Any]], *,
               side: str, x0: float, y0: float, length: float, rotation_deg: float,
               opening: tuple[float, float] | None = None, family: str | None = None) -> None:
-    candidates = _style_safe_items(_items(catalog, "wall_piece", family, layout.building.type), "wall_piece")
+    candidates = _style_safe_items(_items(catalog, "wall_piece", family, layout.building.type, layout.building.district), "wall_piece")
     item, info = _best_item(candidates, target_length=min(length, 3.0), target_height=3.0)
     if item is None:
         return
@@ -636,7 +663,7 @@ def _door_and_frame(layout: Layout, room: Room, catalog: dict[str, Any], placeme
 
 
 def _window(layout: Layout, room: Room, catalog: dict[str, Any], placements: list[dict[str, Any]], family: str | None) -> None:
-    windows = _style_safe_items(_items(catalog, "window_piece", family, layout.building.type), "window_piece")
+    windows = _style_safe_items(_items(catalog, "window_piece", family, layout.building.type, layout.building.district), "window_piece")
     if not windows or room.width < 2.8:
         return
     item, info = _best_item(windows, target_length=min(room.width, 2.0), target_height=1.4)
@@ -821,8 +848,8 @@ def build_architecture_assembly(layouts: list[Layout], catalog: dict[str, Any]) 
     buildings: list[dict[str, Any]] = []
     for layout in layouts:
         all_placements: list[dict[str, Any]] = []
-        family, family_info = choose_architecture_family(catalog, str(layout.building.type))
-        class_families, class_family_info = choose_class_families(catalog, family, str(layout.building.type))
+        family, family_info = choose_architecture_family(catalog, str(layout.building.type), str(layout.building.district))
+        class_families, class_family_info = choose_class_families(catalog, family, str(layout.building.type), str(layout.building.district))
         floors = sorted({int(r.floor) for r in layout.rooms})
         for floor in floors:
             floor_rooms = [r for r in layout.rooms if int(r.floor) == floor]

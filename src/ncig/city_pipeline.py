@@ -103,7 +103,30 @@ def _node_scale(node: dict[str, Any]) -> tuple[float, float, float]:
 
 
 def _flatten_nodes(container: dict[str, Any]) -> list[dict[str, Any]]:
-    return td._flatten_sector_nodes(container)
+    node_defs = container.get("nodes") if isinstance(container.get("nodes"), list) else []
+    placements = container.get("nodeData") if isinstance(container.get("nodeData"), list) else []
+    if placements and node_defs:
+        by_index = {i: item for i, item in enumerate(node_defs) if isinstance(item, dict)}
+        normalized: list[dict[str, Any]] = []
+        for placement in placements:
+            if not isinstance(placement, dict):
+                continue
+            raw_index = placement.get("NodeIndex", placement.get("nodeIndex", placement.get("node_index")))
+            try:
+                base = by_index.get(int(raw_index)) if raw_index is not None else None
+            except (TypeError, ValueError):
+                base = None
+            if not isinstance(base, dict):
+                continue
+            merged = dict(base)
+            merged.update({
+                k: v for k, v in placement.items()
+                if k not in {"NodeIndex", "nodeIndex", "node_index"}
+            })
+            normalized.append(merged)
+        if normalized:
+            return normalized
+    return [dict(item) for item in node_defs if isinstance(item, dict)]
 
 
 def _records_from_json(raw: Any, source_file: str) -> list[dict[str, Any]]:

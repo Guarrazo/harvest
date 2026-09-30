@@ -1,3 +1,12 @@
+## v0.22.5
+
+- Fix collision doorway orientation: corridor-facing walls keep the walkable opening; exterior walls no longer get an accidental centered gap.
+- Reduce default generated doorway opening to 1.15 m × 2.10 m and omit door leaves unless a harvested collisionless variant exists, keeping entrances traversable.
+- Prefer full structural wall modules and reject decorative/add-on/protector/grate/bar pieces for the main shell when suitable alternatives exist.
+- Add mirrored visual faces for very thin runtime wall meshes to reduce one-sided/backface transparency when viewed from inside.
+- Carry detected exterior entrance position, orientation, scale and filename dimensions into building candidates and open the generated exterior wall at that entry.
+- Make automatic building detection more geometry-aware and prefer the bounded runtime architecture catalog when it is available.
+
 ## v0.22.4
 
 - Fix architecture family derivation so mesh filenames are not treated as family names.

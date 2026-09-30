@@ -107,28 +107,26 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
         ))
         floor_node_count += 1
 
-    # Explicit perimeter collision is independent of room-shell coverage.
-    building_width = float(building.get("width_m", 0.0))
-    building_depth = float(building.get("depth_m", 0.0))
-    if building_width > 0.0 and building_depth > 0.0:
-        half_w, half_d = building_width * 0.5, building_depth * 0.5
-        perimeter = [
-            ("north", 0.0, -half_d, building_width, 0.0),
-            ("south", 0.0, half_d, building_width, 0.0),
-            ("west", -half_w, 0.0, building_depth, 90.0),
-            ("east", half_w, 0.0, building_depth, 90.0),
-        ]
-        for side, lx, ly, span, yaw_offset in perimeter:
-            local = _world(building, lx, ly, WALL_HEIGHT / 2)
-            nodes.append(_box(
-                template,
-                name=f"[NCIG COLLISION] {ref_id}_perimeter_{side}",
-                ref=f"$/#{ref_id}_COLL_perimeter_{side}",
-                pos=local,
-                half=(span / 2, WALL_THICKNESS / 2, WALL_HEIGHT / 2),
-                yaw=float(building.get("yaw_deg", 0.0)) + yaw_offset,
-            ))
-            perimeter_node_count += 1
+        # Explicit perimeter collision is independent of room-shell coverage.
+        if building_width > 0.0 and building_depth > 0.0:
+            half_w, half_d = building_width * 0.5, building_depth * 0.5
+            perimeter = [
+                ("north", 0.0, -half_d, building_width, 0.0),
+                ("south", 0.0, half_d, building_width, 0.0),
+                ("west", -half_w, 0.0, building_depth, 90.0),
+                ("east", half_w, 0.0, building_depth, 90.0),
+            ]
+            for side, lx, ly, span, yaw_offset in perimeter:
+                local = _world(building, lx, ly, floor * FLOOR_HEIGHT + WALL_HEIGHT / 2)
+                nodes.append(_box(
+                    template,
+                    name=f"[NCIG COLLISION] {ref_id}_F{floor + 1:02d}_perimeter_{side}",
+                    ref=f"$/#{ref_id}_F{floor + 1:02d}_COLL_perimeter_{side}",
+                    pos=local,
+                    half=(span / 2, WALL_THICKNESS / 2, WALL_HEIGHT / 2),
+                    yaw=float(building.get("yaw_deg", 0.0)) + yaw_offset,
+                ))
+                perimeter_node_count += 1
 
     for room in rooms:
         rid = str(room.get("id"))

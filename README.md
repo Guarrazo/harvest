@@ -1,13 +1,13 @@
-# NCIG v0.21.1
+# NCIG v0.22.6
 
 
 Esta iteración corrige un problema físico importante detectado en la prueba de `demo_shop_001`: los nombres de meshes CP77 usan `w/l/h` con semánticas distintas según la clase. Los muros y puertas ya no interpretan un `_w300` como 30 cm de tramo.
 
 La arquitectura se mantiene en un kit familiar y, cuando faltan piezas de la familia exacta, NCIG prefiere familias del mismo grupo (`common/int`, etc.) antes de caer a recursos globales. La deformación automática queda desactivada hasta disponer de bounding boxes reales del ResourceDepot.
 
-También se añade un shell de colisión por habitación con hueco de puerta, una ampliación configurable del volumen de streaming y un planificador determinista de decoración basado en `.ent` reales y reglas por tipo de habitación. Para activar decoración en el pipeline nativo se puede añadir `with-decoration` al último argumento de `prepare_native_architecture_remote.cmd`.
+También se añade un shell de colisión por habitación con hueco de puerta y dintel sólido, selección de kits sensible al distrito, variación determinista entre familias compatibles y detección de ventanas/entradas basada en evidencia exterior. Las ventanas ya no se inventan en edificios sintéticos.
 
-La detección automática de edificios sigue siendo evidencia-based: usa exports reales de `streamingsector`, agrupa alrededor de entradas y penaliza sectores con evidencia de interior existente.
+La detección automática de edificios usa exports reales de `streamingsector`, agrupa alrededor de entradas, estima el footprint exterior orientado, conserva puertas/ventanas detectadas, filtra carretera/terreno y evidencia de interior existente, y solo marca como rellenables los candidatos con geometría estructural suficiente.
 # Night City Interior Generator (NCIG)
 
 Procedural interior-generation toolkit for Cyberpunk 2077.
@@ -118,6 +118,24 @@ python -m ncig.cli architecture-catalog --harvest build/user_harvest/harvest.jso
 
 Use `--max-per-class` to change the number of candidates retained per structural class.
 
+### Detectar edificios vacíos automáticamente
+
+Exporta desde la herramienta de edición de mundo los `.streamingsector` del área que quieras analizar y colócalos, por ejemplo, en `C:\CyberpunkExports\sectors`.
+
+Después ejecuta:
+
+```powershell
+.\tools\prepare_detected_buildings_remote.cmd https://github.com/Guarrazo/harvest C:\CyberpunkExports\sectors 10
+```
+
+El pipeline genera:
+
+- `build\auto_building_candidates.json`: todos los candidatos con evidencia y puntuación.
+- `build\auto_buildings.json`: solo candidatos suficientemente respaldados para generar.
+- `build\generated_auto\layouts.json`: interiores calculados desde el footprint detectado.
+- `build\real_architecture_remote\architecture_assembly_auto.json`: ensamblaje con assets reales.
+
+La detección todavía necesita un export del mundo. No se añaden datos del mapa del juego al repositorio; el objetivo es que, dado el export, la detección, clasificación, cálculo y generación sean automáticos.
 ### Match scanned entries to generated anchors
 
 ```powershell

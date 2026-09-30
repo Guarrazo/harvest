@@ -139,6 +139,14 @@ def filter_asset_candidates(
         item["_ncig_quality"] = asset_quality(item, cls, building_type)
 
     accepted = [x for x in rows if not x["_ncig_quality"]["hard_block"]]
+    # Never make generation impossible solely because a tiny catalog is imperfect.
+    # If every candidate is blocked, keep the least-bad candidates and expose the
+    # semantic mismatch in their selection report.
+    if not accepted:
+        accepted = rows
+        for item in accepted:
+            item["_ncig_quality"]["reasons"].append("hard_block_fallback_catalog_exhausted")
+            item["_ncig_quality"]["adjustment"] -= 1000.0
     accepted.sort(
         key=lambda x: (
             -float(x["_ncig_quality"]["adjustment"]),

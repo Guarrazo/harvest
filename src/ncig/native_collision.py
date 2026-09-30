@@ -10,7 +10,7 @@ FLOOR_HEIGHT = 3.2
 WALL_HEIGHT = 3.0
 WALL_THICKNESS = 0.12
 FLOOR_THICKNESS = 0.10
-DOOR_GAP = 1.15
+DOOR_GAP = 1.25
 
 
 def _with_template(template: dict[str, Any] | None, generated: dict[str, Any], *, name: str, node_ref: str, position: dict[str, float], rotation: dict[str, float]) -> dict[str, Any]:
@@ -76,6 +76,40 @@ def _has_neighbor(room: dict[str, Any], floor_rooms: list[dict[str, Any]], side:
     return False
 
 
+def _append_header_collision(
+    nodes: list[dict[str, Any]],
+    template: dict[str, Any] | None,
+    *,
+    building: dict[str, Any],
+    rid: str,
+    side: str,
+    floor: int,
+    center_axis: float,
+    gap: float,
+    x: float,
+    y: float,
+) -> None:
+    remaining_h = max(0.0, WALL_HEIGHT - DEFAULT_DOOR_HEIGHT)
+    if remaining_h <= 0.02:
+        return
+    z = floor * FLOOR_HEIGHT + DEFAULT_DOOR_HEIGHT + remaining_h * 0.5
+    local = _world(building, x, y, z)
+    if side in {"north", "south"}:
+        half = (gap * 0.5, WALL_THICKNESS / 2, remaining_h * 0.5)
+        yaw = float(building.get("yaw_deg", 0.0))
+    else:
+        half = (WALL_THICKNESS / 2, gap * 0.5, remaining_h * 0.5)
+        yaw = float(building.get("yaw_deg", 0.0)) + 90
+    nodes.append(_box(
+        template,
+        name=f"[NCIG COLLISION] {rid}_{side}_header",
+        ref=f"$/#{building.get('id','building')}_{rid}_COLL_{side}_header",
+        pos=local,
+        half=half,
+        yaw=yaw,
+    ))
+
+
 def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     building = layout.get("building", {})
     rooms = [r for r in layout.get("rooms", []) or [] if isinstance(r, dict)]
@@ -130,7 +164,7 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
         # The visual generator puts the room door on the corridor-facing wall:
         # positive-Y rooms use north; negative-Y rooms use south. The old collision
         # code inverted this and opened the exterior wall instead.
-        opening_side = "north" if ry >= 0 else "south"
+        opening_side = "south" if ry >= 0 else "north"
         entry_opening: tuple[float, float] | None = None
         entry_side: str | None = None
         if floor == 0 and building.get("entry_local_x") is not None and building.get("entry_local_y") is not None:
@@ -163,6 +197,13 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
                         half=((b - a) / 2, WALL_THICKNESS / 2, WALL_HEIGHT / 2),
                         yaw=float(building.get("yaw_deg", 0.0)),
                     ))
+                if active_opening is not None:
+                    center_axis = (active_opening[0] + active_opening[1]) * 0.5
+                    _append_header_collision(
+                        nodes, template, building=building, rid=rid, side=side, floor=floor,
+                        center_axis=center_axis, gap=active_opening[1] - active_opening[0],
+                        x=rx + center_axis, y=ry,
+                    )
             elif side == "south":
                 active_opening = opening if opening_side == side else (entry_opening if entry_side == side else None)
                 parts = _wall_segments(0, w, active_opening)
@@ -176,6 +217,13 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
                         half=((b - a) / 2, WALL_THICKNESS / 2, WALL_HEIGHT / 2),
                         yaw=float(building.get("yaw_deg", 0.0)),
                     ))
+                if active_opening is not None:
+                    center_axis = (active_opening[0] + active_opening[1]) * 0.5
+                    _append_header_collision(
+                        nodes, template, building=building, rid=rid, side=side, floor=floor,
+                        center_axis=center_axis, gap=active_opening[1] - active_opening[0],
+                        x=rx + center_axis, y=ry + d,
+                    )
             elif side == "west":
                 if _has_neighbor(room, floor_rooms, "west"):
                     continue
@@ -191,6 +239,13 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
                             half=(WALL_THICKNESS / 2, (b - a) / 2, WALL_HEIGHT / 2),
                             yaw=float(building.get("yaw_deg", 0.0)) + 90,
                         ))
+                    if entry_opening is not None:
+                        center_axis = (entry_opening[0] + entry_opening[1]) * 0.5
+                        _append_header_collision(
+                            nodes, template, building=building, rid=rid, side=side, floor=floor,
+                            center_axis=center_axis, gap=entry_opening[1] - entry_opening[0],
+                            x=rx, y=ry + center_axis,
+                        )
                     continue
                 local = _world(building, rx, ry + d / 2, zbase + WALL_HEIGHT / 2)
                 nodes.append(_box(
@@ -214,6 +269,13 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
                             half=(WALL_THICKNESS / 2, (b - a) / 2, WALL_HEIGHT / 2),
                             yaw=float(building.get("yaw_deg", 0.0)) + 90,
                         ))
+                    if entry_opening is not None:
+                        center_axis = (entry_opening[0] + entry_opening[1]) * 0.5
+                        _append_header_collision(
+                            nodes, template, building=building, rid=rid, side=side, floor=floor,
+                            center_axis=center_axis, gap=entry_opening[1] - entry_opening[0],
+                            x=rx + w, y=ry + center_axis,
+                        )
                     continue
                 local = _world(building, rx + w, ry + d / 2, zbase + WALL_HEIGHT / 2)
                 nodes.append(_box(
@@ -230,5 +292,5 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
         "node_count": len(nodes),
         "room_count": len(rooms),
         "floor_node_count": floor_node_count,
-        "policy": "continuous_floor_per_floor_plus_room_shell_walls_with_door_openings",
+        "policy": "continuous_floor_per_floor_plus_room_shell_walls_with_door_openings_plus_door_headers",
     }

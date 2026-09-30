@@ -192,16 +192,6 @@ def _entry_door_and_frame(
     return opening, side
 
 
-def _style_tokens(building_type: str) -> tuple[str, ...]:
-    return {
-        "commercial": ("shop", "store", "market", "retail", "mall", "restaurant", "bar", "int"),
-        "residential": ("apartment", "res", "housing", "home", "flat", "common\\int"),
-        "office": ("office", "corp", "corporate", "business", "int"),
-        "industrial": ("industrial", "factory", "warehouse", "workshop", "garage"),
-        "mixed": ("shop", "office", "apartment", "common\\int"),
-    }.get(building_type, ("int",))
-
-
 def choose_architecture_family(catalog: dict[str, Any], building_type: str, district: str | None = None) -> tuple[str | None, dict[str, Any]]:
     """Pick one architectural kit family for a whole building, rather than one unrelated family per piece."""
     items = [x for x in catalog.get("items", []) if isinstance(x, dict) and x.get("class")]
@@ -562,7 +552,7 @@ def _wall_header(
     if WALL_HEIGHT <= DEFAULT_DOOR_HEIGHT:
         return
     candidates = _style_safe_items(
-        _items(catalog, "wall_piece", family, layout.building.type),
+        _items(catalog, "wall_piece", family, layout.building.type, layout.building.district),
         "wall_piece",
     )
     item, info = _best_item(
@@ -630,8 +620,8 @@ def _door_and_frame(layout: Layout, room: Room, catalog: dict[str, Any], placeme
     opening = (center - gap / 2.0, center + gap / 2.0)
     frame_family = wall_family or frame_family
     door_family = wall_family or door_family
-    frame_items = _style_safe_items(_items(catalog, "door_frame", frame_family, layout.building.type), "door_frame")
-    door_items = _style_safe_items(_items(catalog, "door_piece", door_family, layout.building.type), "door_piece")
+    frame_items = _style_safe_items(_items(catalog, "door_frame", frame_family, layout.building.type, layout.building.district), "door_frame")
+    door_items = _style_safe_items(_items(catalog, "door_piece", door_family, layout.building.type, layout.building.district), "door_piece")
     frame, finfo = _best_item(frame_items, target_length=gap, target_height=DEFAULT_DOOR_HEIGHT)
     door, dinfo = _best_item(door_items, target_length=gap, target_height=DEFAULT_DOOR_HEIGHT)
     # A door leaf is emitted only when it is explicitly marked collisionless.
@@ -701,7 +691,7 @@ def _ceiling_surface(layout: Layout, floor_rooms: list[Room], catalog: dict[str,
     width, depth = max_x - min_x, max_y - min_y
     floor = floor_rooms[0].floor
     item, info = _best_item(
-        _items(catalog, "ceiling_piece", family, layout.building.type),
+        _items(catalog, "ceiling_piece", family, layout.building.type, layout.building.district),
         target_length=width,
         target_width=depth,
     )

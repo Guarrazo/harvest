@@ -817,7 +817,7 @@ def build_parser() -> argparse.ArgumentParser:
     db = sub.add_parser("detect-buildings", help="Detect probable decorative/missing-interior building candidates from exported streamingsector JSON")
     db.add_argument("--input", required=True, help="A .streamingsector JSON file or a directory containing exported sector JSONs")
     db.add_argument("--out", required=True, help="ncig-building-candidates-v1 JSON")
-    db.add_argument("--radius", type=float, default=22.0, help="Architecture-to-entrance search radius in metres")
+    db.add_argument("--radius", type=float, default=18.0, help="Architecture-to-entrance search radius in metres")
     db.set_defaults(func=_cmd_detect_buildings)
 
     cb = sub.add_parser("candidates-to-buildings", help="Convert automatic building candidates into NCIG building anchors")

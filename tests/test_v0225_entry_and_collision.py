@@ -42,7 +42,7 @@ def test_collision_door_gap_is_on_corridor_wall_not_exterior_wall():
 def test_detected_entry_opens_the_external_wall():
     building = BuildingAnchor(
         "B1", "test", "commercial", Vec3(0, 0, 0), 0, 8, 8, 1,
-        entry_local_x=0.0, entry_local_y=0.6, entry_yaw_deg=90.0,
+        entry_local_x=0.0, entry_local_y=3.7, entry_yaw_deg=90.0,
     )
     room = Room("B1_F1_R01", "shopfloor", 0, -4, 0.6, 8, 3.2)
     sector = Sector("B1_sector_F01", "B1", 0, "interior", Vec3(-4, -4, -1), Vec3(4, 4, 4), [room.id])

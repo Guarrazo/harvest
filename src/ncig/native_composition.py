@@ -151,7 +151,7 @@ def build_native_composition(
         "streaming_margin_m": float(streaming_margin_m),
         "include_collisions": bool(include_collisions),
         "decoration_supplied": bool(decoration),
-        "collision_policy": "room_shell_boxes_with_door_openings" if include_collisions else "disabled",
+        "collision_policy": "continuous_floor_per_floor_plus_room_shell_walls_with_door_openings" if include_collisions else "disabled",
         "native_export_generated": True,
         "note": "Mesh nodes are cloned from the real worldMeshNode template; collision boxes use the observed entSpawner serializer shape; decoration nodes use the real worldEntityNode template. Physical fit still requires in-game validation.",
     }

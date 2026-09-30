@@ -1,3 +1,11 @@
+## v0.22.0
+
+- Use runtime mesh bounds without collapsing local X/Y axis identity: wall-like pieces now scale along their actual structural span axis and rotate that axis onto the requested wall run.
+- Align emitted meshes by their harvested bounding-box center, preventing non-centered mesh pivots from shifting walls, doors, windows, floors and ceilings.
+- Generate one continuous floor and ceiling surface per generated floor envelope so the central corridor is no longer left without render geometry.
+- Extend generated floor collision to the same continuous per-floor envelope and route those collision nodes to the correct floor sector.
+- Keep corridor-facing wall pieces on the selected wall class family instead of falling back to the primary building family.
+
 ## v0.21.10
 
 - Normalize native Object Spawner sector names from layout IDs before export: lowercase letters and replace whitespace with underscores.

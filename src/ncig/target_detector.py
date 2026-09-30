@@ -512,6 +512,7 @@ def detect_building_candidates(records: list[dict[str, Any]], *, cluster_radius_
             "confidence": confidence,
             "score": score,
             "type": btype,
+            "district": district,
             "position": {"x": round(center_x, 3), "y": round(center_y, 3), "z": round(min_z, 3)},
             "yaw_deg": round(yaw_deg, 3),
             "width_m": round(width, 3),

@@ -19,8 +19,21 @@ from .runtime_geometry import (
 FORMAT = "ncig-architecture-assembly-v1"
 FLOOR_HEIGHT = 3.2
 CEILING_Z = 3.0
-DEFAULT_DOOR_WIDTH = 1.0
+DEFAULT_DOOR_WIDTH = 1.30
+DEFAULT_DOOR_HEIGHT = 2.20
 
+
+_STYLE_EXCLUDE = {
+    "wall_piece": ("destroyed", "stair", "staircase", "railing", "fence", "cage", "prison", "cell"),
+    "door_frame": ("stair", "staircase", "railing", "fence", "cage", "prison", "cell"),
+    "door_piece": ("stair", "staircase", "railing", "fence", "cage", "prison", "cell"),
+    "window_piece": ("stair", "staircase", "railing", "fence", "cage", "prison", "cell"),
+}
+
+def _style_safe_items(items: list[dict[str, Any]], cls: str) -> list[dict[str, Any]]:
+    banned = _STYLE_EXCLUDE.get(cls, ())
+    safe = [item for item in items if not any(token in f"{item.get("path", "")} {item.get("family", "")}".lower() for token in banned)]
+    return safe or items
 
 def _items(catalog: dict[str, Any], cls: str, family: str | None = None, building_type: str | None = None) -> list[dict[str, Any]]:
     tokens = _style_tokens(building_type or "mixed")

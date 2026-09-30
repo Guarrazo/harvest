@@ -840,8 +840,71 @@ def assemble_room(layout: Layout, room: Room, catalog: dict[str, Any], family: s
             length=room.depth, opening=entry_gap,
             family=wall_family,
         )
-    _window(layout, room, catalog, placements, fm.get("window_piece", family))
+    # Do not invent facade glass. Windows are emitted only from exterior-detection evidence.
     return placements
+
+
+def _detected_windows(layout: Layout, catalog: dict[str, Any], placements: list[dict[str, Any]], family: str | None, class_families: dict[str, str]) -> None:
+    """Emit facade windows only where the detector found real exterior window evidence."""
+    openings = [
+        x for x in getattr(layout.building, "detected_openings", ())
+        if isinstance(x, dict) and x.get("kind") == "window"
+    ]
+    if not openings:
+        return
+    candidates = _style_safe_items(
+        _items(
+            catalog, "window_piece", class_families.get("window_piece", family),
+            layout.building.type, layout.building.district
+        ),
+        "window_piece",
+    )
+    if not candidates:
+        return
+    for index, opening in enumerate(openings[:24], 1):
+        side = str(opening.get("side") or "north")
+        width = max(0.6, min(6.0, float(opening.get("width_m", 1.5))))
+        height = max(0.8, min(3.0, float(opening.get("height_m", 1.4))))
+        lx = float(opening.get("local_x", 0.0))
+        ly = float(opening.get("local_y", 0.0))
+        room = min(
+            layout.rooms,
+            key=lambda r: math.hypot(
+                max(r.x - lx, 0.0, lx - (r.x + r.width)),
+                max(r.y - ly, 0.0, ly - (r.y + r.depth)),
+            ),
+        )
+        item, info = _best_item(candidates, target_length=width, target_height=height)
+        if item is None:
+            continue
+        rotation = 0.0 if side in {"north", "south"} else 90.0
+        runtime_mesh = isinstance(item.get("bounds"), dict)
+        if runtime_mesh:
+            fit_info = linear_fit(item, span=width, height=height, desired_rotation_deg=rotation)
+            fit = (fit_info or {}).get("scale") or {"x": 1.0, "y": 1.0, "z": 1.0}
+            actual_rotation = float((fit_info or {}).get("rotation_deg", rotation))
+            z = float(opening.get("z_m", 1.6))
+            bbox_center = (lx, ly, z)
+            local_z = 0.0
+        else:
+            fit = _fit_scale(item, {"span": width, "height": height}, "window_piece")
+            actual_rotation = rotation
+            bbox_center = None
+            local_z = 1.0
+        placements.append(_placement(
+            layout, room, item,
+            element_id=f"{layout.building.id}_ARCH_detected_window_{index:02d}",
+            local_x=lx, local_y=ly, local_z=local_z,
+            rotation_deg=actual_rotation, semantic="detected_window",
+            target={
+                "detected": True,
+                "side": side,
+                "width_m": width,
+                "height_m": height,
+                "source_resource": opening.get("resource"),
+            },
+            info=info, scale=fit, target_bbox_center=bbox_center,
+        ))
 
 
 def build_architecture_assembly(layouts: list[Layout], catalog: dict[str, Any]) -> dict[str, Any]:
@@ -859,6 +922,8 @@ def build_architecture_assembly(layouts: list[Layout], catalog: dict[str, Any]) 
             entry_key = (entry_target[0].id, entry_target[1]) if entry_target else None
             for room in floor_rooms:
                 all_placements.extend(assemble_room(layout, room, catalog, family, class_families, floor_rooms, entry_key))
+            if floor == 0:
+                _detected_windows(layout, catalog, all_placements, family, class_families)
         by_class = defaultdict(int)
         unresolved = []
         for p in all_placements:

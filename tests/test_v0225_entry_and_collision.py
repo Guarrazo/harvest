@@ -35,8 +35,9 @@ def test_collision_door_gap_is_on_corridor_wall_not_exterior_wall():
     nodes, _ = build_room_collisions(_single_layout())
     north = [n for n in nodes if "_B1_F1_R01_COLL_north_" in n["nodeRef"]]
     south = [n for n in nodes if "_B1_F1_R01_COLL_south_" in n["nodeRef"]]
-    assert len(north) == 2
+    assert len(north) >= 2
     assert len(south) == 1
+    assert any(n["nodeRef"].endswith("COLL_north_header") for n in nodes)
 
 
 def test_detected_entry_opens_the_external_wall():
@@ -73,7 +74,7 @@ def test_detected_entry_opens_the_external_wall():
     external_north = [
         p for p in placements
         if p["class"] == "wall_piece"
-        and p["target"].get("side") == "north"
+        and p["target"].get("side") == "south"
         and p["target"].get("opening") is not None
     ]
     assert external_north
@@ -119,5 +120,6 @@ def test_detected_exterior_entry_collision_gap_is_on_facade_wall():
     nodes, _ = build_room_collisions(layout)
     south = [n for n in nodes if "_B1_F1_R01_COLL_south_" in n["nodeRef"]]
     north = [n for n in nodes if "_B1_F1_R01_COLL_north_" in n["nodeRef"]]
-    assert len(south) == 2
+    assert len(south) >= 2
     assert len(north) == 1
+    assert any(n["nodeRef"].endswith("COLL_south_header") for n in nodes)

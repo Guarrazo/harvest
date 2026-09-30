@@ -1,3 +1,5 @@
+- Backwards-compatible room-rule dimension filtering, partial filename-hint fitting, normalized common interior family identities, and room-aware door candidate filtering.
+- Exterior perimeter collision now preserves a detected ground-floor entrance opening.
 ## v0.23.0
 
 - Add style-aware interior asset quality filtering for walls and doors, including explicit penalties/blocks for grille, railing, prison/cell and other non-partition semantics.

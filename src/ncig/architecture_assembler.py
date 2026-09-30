@@ -19,8 +19,10 @@ from .runtime_geometry import (
 FORMAT = "ncig-architecture-assembly-v1"
 FLOOR_HEIGHT = 3.2
 CEILING_Z = 3.0
-DEFAULT_DOOR_WIDTH = 1.30
-DEFAULT_DOOR_HEIGHT = 2.20
+DEFAULT_DOOR_WIDTH = 1.15
+DEFAULT_DOOR_HEIGHT = 2.10
+WALL_BACKFACE_OFFSET = 0.02
+WALL_BACKFACE_MAX_THICKNESS = 0.08
 
 
 _STYLE_EXCLUDE = {
@@ -34,8 +36,112 @@ def _style_safe_items(items: list[dict[str, Any]], cls: str) -> list[dict[str, A
     banned = _STYLE_EXCLUDE.get(cls, ())
     safe = [item for item in items if not any(token in (str(item.get("path", "")) + " " + str(item.get("family", ""))).lower() for token in banned)]
     return safe or items
-
 def _items(catalog: dict[str, Any], cls: str, family: str | None = None, building_type: str | None = None) -> list[dict[str, Any]]:
+
+
+def _needs_backface(item: dict[str, Any]) -> bool:
+    """Return True for the very thin/planar wall meshes that need a mirrored visual face."""
+    bounds = item.get("bounds")
+    if not isinstance(bounds, dict):
+        return False
+    dims = bounds.get("dimensions_m")
+    if not isinstance(dims, dict):
+        return False
+    try:
+        thickness = min(abs(float(dims["x"])), abs(float(dims["y"])))
+    except (KeyError, TypeError, ValueError):
+        return False
+    return thickness <= WALL_BACKFACE_MAX_THICKNESS
+
+
+def _room_entry_target(layout: Layout, floor_rooms: list[Room], floor: int = 0) -> tuple[Room, str] | None:
+    """Find the floor-0 room and outer wall closest to the detected real entrance."""
+    if floor != 0 or not floor_rooms:
+        return None
+    b = layout.building
+    if b.entry_local_x is None or b.entry_local_y is None:
+        return None
+    ex, ey = float(b.entry_local_x), float(b.entry_local_y)
+    room = min(
+        floor_rooms,
+        key=lambda r: math.hypot(
+            max(r.x - ex, 0.0, ex - (r.x + r.width)),
+            max(r.y - ey, 0.0, ey - (r.y + r.depth)),
+        ),
+    )
+    distances = {
+        "north": abs(ey - room.y),
+        "south": abs(ey - (room.y + room.depth)),
+        "west": abs(ex - room.x),
+        "east": abs(ex - (room.x + room.width)),
+    }
+    return room, min(distances, key=distances.get)
+
+
+def _entry_door_and_frame(
+    layout: Layout,
+    room: Room,
+    catalog: dict[str, Any],
+    placements: list[dict[str, Any]],
+    wall_family: str | None,
+    side: str,
+) -> tuple[tuple[float, float], str]:
+    """Create a second door at the detected exterior entrance."""
+    gap = min(DEFAULT_DOOR_WIDTH, room.width * 0.40 if side in {"north", "south"} else room.depth * 0.40)
+    b = layout.building
+    ex = float(b.entry_local_x if b.entry_local_x is not None else room.x + room.width * 0.5)
+    ey = float(b.entry_local_y if b.entry_local_y is not None else room.y + room.depth * 0.5)
+    if side in {"north", "south"}:
+        center = max(gap * 0.5, min(room.width - gap * 0.5, ex - room.x))
+        wall_y = room.y if side == "north" else room.y + room.depth
+        rotation = 0.0
+        center_x, center_y = room.x + center, wall_y
+        wall_length = room.width
+    else:
+        center = max(gap * 0.5, min(room.depth - gap * 0.5, ey - room.y))
+        wall_x = room.x if side == "west" else room.x + room.width
+        rotation = 90.0
+        center_x, center_y = wall_x, room.y + center
+        wall_length = room.depth
+    opening = (center - gap * 0.5, center + gap * 0.5)
+    frame_family = wall_family
+    door_family = wall_family
+    frame_items = _style_safe_items(_items(catalog, "door_frame", frame_family, layout.building.type), "door_frame")
+    door_items = _style_safe_items(_items(catalog, "door_piece", door_family, layout.building.type), "door_piece")
+    frame, finfo = _best_item(frame_items, target_length=gap, target_height=DEFAULT_DOOR_HEIGHT)
+    door, dinfo = _best_item(door_items, target_length=gap, target_height=DEFAULT_DOOR_HEIGHT)
+    for suffix, cls, item, info in (("frame", "door_frame", frame, finfo), ("door", "door_piece", door, dinfo)):
+        if item is None:
+            continue
+        runtime_mesh = isinstance(item.get("bounds"), dict)
+        if runtime_mesh:
+            fit_info = linear_fit(item, span=gap, height=DEFAULT_DOOR_HEIGHT, desired_rotation_deg=rotation)
+            fit = (fit_info or {}).get("scale") or {"x": 1.0, "y": 1.0, "z": 1.0}
+            actual_rotation = float((fit_info or {}).get("rotation_deg", rotation))
+            bbox_center = (center_x, center_y, room.floor * FLOOR_HEIGHT + DEFAULT_DOOR_HEIGHT * 0.5)
+        else:
+            fit = _fit_scale(item, {"span": gap, "height": DEFAULT_DOOR_HEIGHT}, cls)
+            actual_rotation, bbox_center = rotation, None
+        placements.append(_placement(
+            layout, room, item,
+            element_id=f"{room.id}_ARCH_entry_{suffix}",
+            local_x=center_x, local_y=center_y, local_z=0.0,
+            rotation_deg=actual_rotation, semantic=cls,
+            target={
+                "opening_width_m": gap,
+                "opening_height_m": DEFAULT_DOOR_HEIGHT,
+                "wall_side": side,
+                "external_entry": True,
+                "entry_local_x": ex,
+                "entry_local_y": ey,
+                "wall_length_m": wall_length,
+                "fit_scale": fit,
+                "runtime_span_axis": (fit_info or {}).get("span_axis") if runtime_mesh else None,
+            },
+            info=info, scale=fit, target_bbox_center=bbox_center,
+        ))
+    return opening, side
+
     tokens = _style_tokens(building_type or "mixed")
     return compatible_family_candidates(catalog, cls, family, building_tokens=tokens)
 
@@ -366,6 +472,31 @@ def _wall_run(layout: Layout, room: Room, catalog: dict[str, Any], placements: l
                         "runtime_span_axis": (fit_info or {}).get("span_axis") if runtime_mesh else None},
                 info=info, scale=fit, target_bbox_center=bbox_center,
             ))
+            if runtime_mesh and _needs_backface(item):
+                nx, ny = {
+                    "north": (0.0, 1.0),
+                    "south": (0.0, -1.0),
+                    "west": (1.0, 0.0),
+                    "east": (-1.0, 0.0),
+                }[side]
+                back_center = (lx + nx * WALL_BACKFACE_OFFSET, ly + ny * WALL_BACKFACE_OFFSET, room.floor * FLOOR_HEIGHT + 1.5)
+                placements.append(_placement(
+                    layout, room, item,
+                    element_id=f"{room.id}_ARCH_wall_{side}_{counter:02d}_back",
+                    local_x=lx, local_y=ly, local_z=0.0,
+                    rotation_deg=actual_rotation + 180.0, semantic="wall_backface",
+                    target={
+                        "run_m": length,
+                        "segment_m": actual,
+                        "side": side,
+                        "opening": opening,
+                        "backface": True,
+                        "offset_m": WALL_BACKFACE_OFFSET,
+                        "fit_scale": fit,
+                        "runtime_span_axis": (fit_info or {}).get("span_axis") if runtime_mesh else None,
+                    },
+                    info=info, scale=fit, target_bbox_center=back_center,
+                ))
 
 
 def _door_and_frame(layout: Layout, room: Room, catalog: dict[str, Any], placements: list[dict[str, Any]], frame_family: str | None, door_family: str | None, wall_family: str | None = None) -> tuple[tuple[float, float], str]:
@@ -519,7 +650,8 @@ def _has_neighbor(room: Room, floor_rooms: list[Room], side: str, eps: float = 0
 
 def assemble_room(layout: Layout, room: Room, catalog: dict[str, Any], family: str | None,
                   class_families: dict[str, str] | None = None,
-                  floor_rooms: list[Room] | None = None) -> list[dict[str, Any]]:
+                  floor_rooms: list[Room] | None = None,
+                  entry_target: tuple[str, str] | None = None) -> list[dict[str, Any]]:
     """Assemble room shell/details; floor and ceiling are generated once per floor."""
     placements: list[dict[str, Any]] = []
     fm = class_families or {}
@@ -528,22 +660,32 @@ def assemble_room(layout: Layout, room: Room, catalog: dict[str, Any], family: s
         layout, room, catalog, placements,
         fm.get("door_frame", family), fm.get("door_piece", family), wall_family,
     )
+    entry_gap = None
+    entry_side = None
+    if entry_target and entry_target[0] == room.id:
+        entry_gap, entry_side = _entry_door_and_frame(layout, room, catalog, placements, wall_family, entry_target[1])
     if room.y >= 0:
         _wall_run(layout, room, catalog, placements, side="south", x0=room.x, y0=room.y + room.depth,
-                  length=room.width, rotation_deg=0.0, family=wall_family)
+                  length=room.width, rotation_deg=0.0,
+                  opening=entry_gap if entry_side == "south" else None, family=wall_family)
         _wall_run(layout, room, catalog, placements, side="north", x0=room.x, y0=room.y,
                   length=room.width, rotation_deg=0.0, opening=door_gap, family=wall_family)
     else:
         _wall_run(layout, room, catalog, placements, side="north", x0=room.x, y0=room.y,
-                  length=room.width, rotation_deg=0.0, family=wall_family)
+                  length=room.width, rotation_deg=0.0,
+                  opening=entry_gap if entry_side == "north" else None, family=wall_family)
         _wall_run(layout, room, catalog, placements, side="south", x0=room.x, y0=room.y + room.depth,
                   length=room.width, rotation_deg=0.0, opening=door_gap, family=wall_family)
     peers = floor_rooms or [room]
     if not _has_neighbor(room, peers, "west"):
         _wall_run(layout, room, catalog, placements, side="west", x0=room.x, y0=room.y,
-                  length=room.depth, rotation_deg=90.0, family=wall_family)
+                  length=room.depth, rotation_deg=90.0,
+                  opening=entry_gap if entry_side == "west" else None, family=wall_family)
+    else:
+        pass
     _wall_run(layout, room, catalog, placements, side="east", x0=room.x + room.width, y0=room.y,
-              length=room.depth, rotation_deg=90.0, family=wall_family)
+              length=room.depth, rotation_deg=90.0,
+              opening=entry_gap if entry_side == "east" else None, family=wall_family)
     _window(layout, room, catalog, placements, fm.get("window_piece", family))
     return placements
 
@@ -559,8 +701,10 @@ def build_architecture_assembly(layouts: list[Layout], catalog: dict[str, Any]) 
             floor_rooms = [r for r in layout.rooms if int(r.floor) == floor]
             _floor_surface(layout, floor_rooms, catalog, all_placements, class_families.get("floor_piece", family))
             _ceiling_surface(layout, floor_rooms, catalog, all_placements, class_families.get("ceiling_piece", family))
+            entry_target = _room_entry_target(layout, floor_rooms, floor)
+            entry_key = (entry_target[0].id, entry_target[1]) if entry_target else None
             for room in floor_rooms:
-                all_placements.extend(assemble_room(layout, room, catalog, family, class_families, floor_rooms))
+                all_placements.extend(assemble_room(layout, room, catalog, family, class_families, floor_rooms, entry_key))
         by_class = defaultdict(int)
         unresolved = []
         for p in all_placements:

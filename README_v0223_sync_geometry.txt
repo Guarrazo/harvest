@@ -1,0 +1,1 @@
+NCIG v0.22.3 sync + geometry diagnostic. Run sync_v0223_main_canonical.ps1, regenerate layouts/assembly/composition, then run tools\architecture_geometry_diagnostic_cp2077.cmd. The diagnostic measures actual runtime-bounded mesh extents and wall/door placement errors. Repair/diagnostic ZIP, not a complete repository ZIP.

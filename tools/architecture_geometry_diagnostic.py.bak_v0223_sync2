@@ -1,0 +1,44 @@
+from __future__ import annotations
+import argparse,json,math
+from collections import Counter
+from pathlib import Path
+
+def load(p): return json.loads(Path(p).read_text(encoding="utf-8"))
+def rot(x,y,a):
+    a=math.radians(a); return math.cos(a)*x-math.sin(a)*y, math.sin(a)*x+math.cos(a)*y
+def inv(x,y,a): return rot(x,y,-a)
+def local_pos(pos,b):
+    x,y=inv(float(pos["x"])-float(b["position"]["x"]),float(pos["y"])-float(b["position"]["y"]),float(b.get("yaw_deg",0)))
+    return x,y,float(pos["z"])-float(b["position"]["z"])
+def bbox(item,scale,yaw):
+    b=item.get("bounds") or {}; mn,mx=b.get("min"),b.get("max")
+    if not isinstance(mn,dict) or not isinstance(mx,dict): return None
+    pts=[]
+    for x in (float(mn["x"])*float(scale.get("x",1)),float(mx["x"])*float(scale.get("x",1))):
+      for y in (float(mn["y"])*float(scale.get("y",1)),float(mx["y"])*float(scale.get("y",1))): pts.append(rot(x,y,yaw))
+    xs=[p[0] for p in pts];ys=[p[1] for p in pts]
+    return min(xs),max(xs),min(ys),max(ys)
+
+p=argparse.ArgumentParser();p.add_argument("--layouts",default=r"build\generated\layouts.json");p.add_argument("--assembly",default=r"build\real_architecture_remote\architecture_assembly_bounded.json");p.add_argument("--catalog",default=r"build\real_architecture_remote\architecture_catalog_bounded.json");p.add_argument("--building-id",default="demo_shop_001");p.add_argument("--out",default=r"build\real_architecture_remote\geometry_diagnostic_demo_shop_001.json");a=p.parse_args()
+layouts=load(a.layouts);asm=load(a.assembly);cat=load(a.catalog);cat=cat.get("catalog",cat)
+layout=next(x for x in layouts.get("layouts",[]) if x.get("building",{}).get("id")==a.building_id);building=layout["building"];rooms={str(r["id"]):r for r in layout.get("rooms",[])}
+items={str(x.get("path")):x for x in cat.get("items",[]) if isinstance(x,dict) and x.get("path")}
+model=next(x for x in asm.get("buildings",[]) if x.get("id")==a.building_id); rows=[]; missing=0; nonid=0; counts=Counter()
+for q in model.get("placements",[]):
+  r=rooms.get(str(q.get("room_id"))); item=items.get(str(q.get("resource"))); counts[str(q.get("class"))]+=1; sc=q.get("scale") or {}
+  nonid += int(any(abs(float(sc.get(k,1))-1)>1e-5 for k in ("x","y","z")))
+  lx,ly,lz=local_pos(q["position"],building); rel=float(q.get("rotation_deg",0))-float(building.get("yaw_deg",0)); row={"id":q.get("id"),"class":q.get("class"),"resource":q.get("resource"),"local_position":{"x":lx,"y":ly,"z":lz},"relative_rotation_deg":rel,"scale":sc,"bounds_present":bool(item and isinstance(item.get("bounds"),dict))}
+  if not item or not isinstance(item.get("bounds"),dict): missing+=1
+  else:
+    bb=bbox(item,sc,rel);row["actual_bbox_local"]={"min_x":lx+bb[0],"max_x":lx+bb[1],"min_y":ly+bb[2],"max_y":ly+bb[3],"width":bb[1]-bb[0],"depth":bb[3]-bb[2]}
+    tgt=q.get("target") or {}
+    if q.get("class")=="wall_piece" and r and tgt.get("side"):
+      side=tgt["side"]; exp=r["y"] if side=="north" else r["y"]+r["depth"] if side=="south" else r["x"] if side=="west" else r["x"]+r["width"]
+      axis="y" if side in ("north","south") else "x"; actual=(bb[2]+bb[3])*0.5+ly if axis=="y" else (bb[0]+bb[1])*0.5+lx
+      row["wall_line_error_m"]=actual-float(exp)
+    if q.get("class") in ("door_piece","door_frame") and r:
+      expx=float(r["x"])+float(r["width"])/2; expy=float(r["y"])+float(r["depth"]) if float(r["y"])<0 else float(r["y"]); row["door_center_error_m"]={"x":lx+(bb[0]+bb[1])*0.5-expx,"y":ly+(bb[2]+bb[3])*0.5-expy}
+  rows.append(row)
+report={"format":"ncig-architecture-geometry-diagnostic-v1","building":{k:building.get(k) for k in ("id","width_m","depth_m","yaw_deg")},"room_count":len(rooms),"placement_count":len(model.get("placements",[])),"class_counts":dict(sorted(counts.items())),"scale_non_identity_count":nonid,"runtime_bounds_missing_count":missing,"placements":rows}
+Path(a.out).parent.mkdir(parents=True,exist_ok=True);Path(a.out).write_text(json.dumps(report,indent=2,ensure_ascii=False),encoding="utf-8")
+print(json.dumps({"written":a.out,"room_count":len(rooms),"placement_count":len(rows),"class_counts":dict(sorted(counts.items())),"scale_non_identity_count":nonid,"runtime_bounds_missing_count":missing},indent=2))

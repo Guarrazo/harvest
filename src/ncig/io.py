@@ -29,6 +29,10 @@ def load_buildings(path: str | Path) -> list[BuildingAnchor]:
             entry_local_x=raw.get("entry_local_x"),
             entry_local_y=raw.get("entry_local_y"),
             entry_yaw_deg=raw.get("entry_yaw_deg"),
+            detected_openings=tuple(
+                x for x in raw.get("detected_openings", [])
+                if isinstance(x, dict)
+            ),
         ))
     return result
 

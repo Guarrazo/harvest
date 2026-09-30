@@ -105,7 +105,7 @@ def _door_candidate_pool(
         if height is not None and height > max_source_height:
             continue
         out.append(item)
-    return out or candidates
+    return out
 
 
 def choose_architecture_family(catalog: dict[str, Any], building_type: str) -> tuple[str | None, dict[str, Any]]:

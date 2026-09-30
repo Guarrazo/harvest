@@ -417,6 +417,72 @@ def _window(layout: Layout, room: Room, catalog: dict[str, Any], placements: lis
     ))
 
 
+def _ceiling_surface(layout: Layout, floor_rooms: list[Room], catalog: dict[str, Any], placements: list[dict[str, Any]], family: str | None) -> None:
+    if not floor_rooms:
+        return
+    min_x, max_x, min_y, max_y = _floor_bounds(floor_rooms)
+    width, depth = max_x - min_x, max_y - min_y
+    floor = floor_rooms[0].floor
+    item, info = _best_item(
+        _items(catalog, "ceiling_piece", family, layout.building.type),
+        target_length=width,
+        target_width=depth,
+    )
+    if item is None:
+        return
+
+    runtime_mesh = isinstance(item.get("bounds"), dict)
+    if runtime_mesh:
+        orientation = preferred_surface_rotation(item, width, depth)
+        piece_x, piece_y = surface_world_dimensions(item, orientation)
+    else:
+        orientation, piece_x, piece_y = 0.0, *_floor_dims(item)
+
+    xs, ys = _tile_axis(width, piece_x), _tile_axis(depth, piece_y)
+    top_z = floor * FLOOR_HEIGHT + CEILING_Z
+    for ix, (cx, actual_x, _) in enumerate(xs, 1):
+        for iy, (cy, actual_y, _) in enumerate(ys, 1):
+            if runtime_mesh:
+                fit = surface_scale(item, actual_x, actual_y, orientation) or {"x": 1.0, "y": 1.0, "z": 1.0}
+                bbox_center = (
+                    min_x + cx,
+                    min_y + cy,
+                    top_z - scaled_bbox_height(item, fit) * 0.5,
+                )
+            else:
+                fit = _fit_scale(
+                    item,
+                    {
+                        "x": actual_x / max(piece_x or actual_x, 1e-6),
+                        "y": actual_y / max(piece_y or actual_y, 1e-6),
+                        "z": 1.0,
+                    },
+                    "ceiling_piece",
+                )
+                bbox_center = None
+
+            placements.append(_placement(
+                layout, floor_rooms[0], item,
+                element_id=f"{floor_rooms[0].id.rsplit('_', 1)[0]}_ARCH_ceiling_F{floor+1:02d}_{ix:02d}_{iy:02d}",
+                local_x=min_x + cx,
+                local_y=min_y + cy,
+                local_z=CEILING_Z,
+                rotation_deg=orientation,
+                semantic="ceiling",
+                target={
+                    "width_m": width,
+                    "depth_m": depth,
+                    "tile_x": ix,
+                    "tile_y": iy,
+                    "fit_scale": fit,
+                    "surface_orientation_deg": orientation,
+                },
+                info=info,
+                scale=fit,
+                target_bbox_center=bbox_center,
+            ))
+
+
 def build_architecture_assembly(layouts: list[Layout], catalog: dict[str, Any]) -> dict[str, Any]:
     buildings: list[dict[str, Any]] = []
     for layout in layouts:

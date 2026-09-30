@@ -218,20 +218,74 @@ def _resource_dimensions(path: str) -> dict[str, float]:
     return out
 
 
+def _record_kind(record: dict[str, Any]) -> str:
+    hay = " ".join(
+        str(record.get(k, ""))
+        for k in ("name", "type", "resource", "text")
+    ).lower()
+    if any(t in hay for t in ("window", "shopwindow", "skylight")):
+        return "window"
+    if any(t in hay for t in ("door", "doorway", "entrance", "entry", "gate", "shutter", "shopfront")):
+        return "door"
+    if any(t in hay for t in ("wall", "partition", "bulkhead", "facade", "building")):
+        return "wall"
+    if any(t in hay for t in ("floor", "ground", "walkway")):
+        return "floor"
+    if any(t in hay for t in ("roof", "ceiling")):
+        return "ceiling"
+    return "other"
+
+
+def _district_from_text(text: str) -> str:
+    hay = text.lower().replace("_", " ").replace("\\", " ")
+    aliases = (
+        ("dogtown", ("dogtown",)),
+        ("watson", ("watson", "kabuki", "little china")),
+        ("westbrook", ("westbrook", "jig jig street", "japan town", "north oak", "charter hill")),
+        ("heywood", ("heywood", "the glen", "vista del rey", "wellprings")),
+        ("santo_domingo", ("santo domingo", "arroyo", "rancho coronado")),
+        ("pacifica", ("pacifica", "coastview", "coast view")),
+        ("city_center", ("city center", "corporate plaza", "downtown")),
+        ("badlands", ("badlands", "rockridge", "biotechnica flats", "medeski")),
+    )
+    for district, tokens in aliases:
+        if any(token in hay for token in tokens):
+            return district
+    return "unknown"
+
+
 def _record_footprint(record: dict[str, Any]) -> tuple[float, float, float, float, float, float] | None:
-    """Return a rough world AABB using filename dimensions + node scale/yaw when available."""
+    """Return a conservative world AABB from resource dimensions and node transform."""
     x, y, z = (float(record[k]) for k in ("x", "y", "z"))
-    dims = record.get("dimensions_m") if isinstance(record.get("dimensions_m"), dict) else _resource_dimensions(str(record.get("resource", "")))
-    lx = float(dims.get("l") or dims.get("w") or 0.0)
-    ly = float(dims.get("w") or dims.get("l") or 0.0)
-    h = float(dims.get("h") or 0.0)
+    dims = record.get("dimensions_m") if isinstance(record.get("dimensions_m"), dict) else {}
+    kind = _record_kind(record)
+    a = math.radians(float(record.get("yaw_deg", 0.0)))
     sx, sy, sz = record.get("scale", (1.0, 1.0, 1.0))
-    lx *= sx
-    ly *= sy
-    h *= sz
+    sx, sy, sz = abs(float(sx)), abs(float(sy)), abs(float(sz))
+
+    if kind in {"wall", "door", "window"}:
+        span = max(float(dims.get("l", 0.0)), float(dims.get("w", 0.0)))
+        thickness_values = [float(v) for v in (dims.get("l", 0.0), dims.get("w", 0.0)) if float(v) > 0.01]
+        thickness = min(thickness_values, default=0.12)
+        # CP77 architecture filenames commonly use w/l as span/thickness for wall-like pieces.
+        if len(thickness_values) == 1:
+            thickness = min(0.16, max(0.06, thickness_values[0] * 0.10))
+        lx, ly = max(0.10, span) * sx, max(0.04, thickness) * sy
+    elif kind in {"floor", "ceiling"}:
+        lx = max(float(dims.get("l", 0.0)), float(dims.get("w", 0.0))) * sx
+        ly = min(
+            max(float(dims.get("l", 0.0)), float(dims.get("w", 0.0))),
+            max(float(dims.get("w", 0.0)), 0.10),
+        ) * sy
+        if lx <= 0.01 or ly <= 0.01:
+            return None
+    else:
+        lx = float(dims.get("l", 0.0) or dims.get("w", 0.0)) * sx
+        ly = float(dims.get("w", 0.0) or dims.get("l", 0.0)) * sy
+
+    h = float(dims.get("h", 0.0)) * sz
     if lx <= 0.01 or ly <= 0.01:
         return None
-    a = math.radians(float(record.get("yaw_deg", 0.0)))
     ex = abs(math.cos(a)) * lx * 0.5 + abs(math.sin(a)) * ly * 0.5
     ey = abs(math.sin(a)) * lx * 0.5 + abs(math.cos(a)) * ly * 0.5
     ez = h * 0.5 if h > 0.01 else 0.0
@@ -246,9 +300,18 @@ def _is_architecture(record: dict[str, Any]) -> bool:
     return "\\environment\\architecture\\" in resource or _has_token(text, _BUILDING_TOKENS)
 
 
+def _is_window(record: dict[str, Any]) -> bool:
+    return _record_kind(record) == "window" and not _is_interior(record)
+
+
 def _is_entrance(record: dict[str, Any]) -> bool:
     text = str(record.get("text", "")).lower()
-    return _has_token(text, _ENTRANCE_TOKENS)
+    if _has_token(text, _EXTERIOR_NEGATIVE):
+        return False
+    return (_record_kind(record) == "door") and (
+        "\\environment\\architecture\\" in str(record.get("resource", "")).lower()
+        or _has_token(text, _BUILDING_TOKENS)
+    )
 
 
 def _is_interior(record: dict[str, Any]) -> bool:
@@ -359,6 +422,7 @@ def detect_building_candidates(records: list[dict[str, Any]], *, cluster_radius_
         group = nearby + entrance_group
         building_text = " ".join(str(r.get("text", "")) for r in group)
         btype = _building_type(building_text)
+        district = _district_from_text(building_text)
         center_x, center_y, u_min, u_max, v_min, v_max, yaw_deg = _oriented_bounds(nearby)
         width = max(4.5, (u_max - u_min) + 0.80)
         depth = max(4.5, (v_max - v_min) + 0.80)
@@ -394,6 +458,36 @@ def detect_building_candidates(records: list[dict[str, Any]], *, cluster_radius_
             for token in _BUILDING_TOKENS + _ENTRANCE_TOKENS:
                 if token in token_text:
                     token_counts[token] += 1
+
+        detected_openings: list[dict[str, Any]] = []
+        for wr in [r for r in nearby if _is_window(r)]:
+            theta_w = math.radians(float(yaw_deg))
+            ct_w, st_w = math.cos(theta_w), math.sin(theta_w)
+            wx, wy = float(wr["x"]), float(wr["y"])
+            local_x = (wx - center_x) * ct_w + (wy - center_y) * st_w
+            local_y = -(wx - center_x) * st_w + (wy - center_y) * ct_w
+            half_w = width * 0.5
+            half_d = depth * 0.5
+            dists = {
+                "north": abs(local_y + half_d),
+                "south": abs(local_y - half_d),
+                "west": abs(local_x + half_w),
+                "east": abs(local_x - half_w),
+            }
+            side = min(dists, key=dists.get)
+            dims_w = _resource_dimensions(str(wr.get("resource", "")))
+            span = max(dims_w.get("l", 0.0), dims_w.get("w", 0.0))
+            height_w = dims_w.get("h", 0.0)
+            detected_openings.append({
+                "kind": "window",
+                "side": side,
+                "local_x": round(local_x, 3),
+                "local_y": round(local_y, 3),
+                "width_m": round(max(0.6, min(6.0, span or 1.5)), 3),
+                "height_m": round(max(0.8, min(3.0, height_w or 1.4)), 3),
+                "yaw_deg": round(float(wr.get("yaw_deg", yaw_deg)), 3),
+                "resource": str(wr.get("resource", "")),
+            })
 
         entry_dims = [_resource_dimensions(str(r.get("resource", ""))) for r in entrance_group]
         entry_spans = [max(d.get("l", 0.0), d.get("w", 0.0)) for d in entry_dims]
@@ -432,6 +526,7 @@ def detect_building_candidates(records: list[dict[str, Any]], *, cluster_radius_
             "entry_yaw_deg": round(entry_facing_deg, 3),
             "entry_width_m": round(entry_width, 3),
             "entry_height_m": round(entry_height, 3),
+            "detected_openings": detected_openings[:24],
             "exterior_bounds": {
                 "width_m": round(width, 3),
                 "depth_m": round(depth, 3),
@@ -487,7 +582,7 @@ def candidates_to_buildings(report: dict[str, Any], *, min_score: int = 75, max_
         evidence = candidate.get("evidence") or {}
         buildings.append({
             "id": str(candidate["id"]),
-            "district": "auto_detected",
+            "district": candidate.get("district", "auto_detected"),
             "type": candidate.get("type", "mixed"),
             "position": candidate.get("position", {"x": 0, "y": 0, "z": 0}),
             "yaw_deg": float(candidate.get("yaw_deg", 0.0)),
@@ -499,6 +594,7 @@ def candidates_to_buildings(report: dict[str, Any], *, min_score: int = 75, max_
             "entry_yaw_deg": float(candidate.get("entry_yaw_deg", candidate.get("yaw_deg", 0.0))),
             "entry_width_m": float(candidate.get("entry_width_m", 1.15)),
             "entry_height_m": float(candidate.get("entry_height_m", 2.10)),
+            "detected_openings": candidate.get("detected_openings", []),
             "tags": [
                 "auto_detected",
                 "ncig_target",

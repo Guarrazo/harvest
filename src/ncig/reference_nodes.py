@@ -252,8 +252,8 @@ def collision_node(
     node_ref: str,
     position: dict[str, float],
     size: dict[str, float],
-    preset: str = "Default",
-    material: str = "Default",
+    preset: str = "Simple Environment Collision",
+    material: str = "concrete.physmat",
     rotation: dict[str, float] | None = None,
     scale: dict[str, float] | None = None,
 ) -> dict[str, Any]:

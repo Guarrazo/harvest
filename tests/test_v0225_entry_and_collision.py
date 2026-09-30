@@ -81,7 +81,7 @@ def test_detected_entry_opens_the_external_wall():
 def test_thin_runtime_wall_receives_mirrored_visual_face():
     building = BuildingAnchor("B1", "test", "commercial", Vec3(0, 0, 0), 0, 6, 6, 1)
     room = Room("B1_F1_R01", "shopfloor", 0, -3, 0, 6, 3)
-    sector = Sector("B1_sector_F01", "B1", 0, "interior", Vec3(-3, -1), Vec3(3, 4), [room.id])
+    sector = Sector("B1_sector_F01", "B1", 0, "interior", Vec3(-3, -1, 0), Vec3(3, 4, 4), [room.id])
     layout = Layout(building, [room], [], [sector], [])
     wall = {
         "path": "base\\environment\\architecture\\common\\int\\shopkit_wall.mesh",

@@ -2,7 +2,7 @@
 
 - Correct the corridor/exterior collision orientation and add a solid collision header above 2.20 m door openings.
 - Set the default doorway to 1.25 m × 2.20 m and avoid emitting door leaves unless a collisionless variant is known.
-- Remove arbitrary generated facade windows; only windows discovered from exterior-sector evidence are emitted.
+- Remove arbitrary generated facade windows; detected exterior windows are retained as evidence and are not rendered until NCIG can cut a proper wall opening around them.
 - Carry detected facade openings and district information into building anchors.
 - Add district-aware, deterministic variation between compatible architecture kits.
 - Require multi-side architectural evidence and a sane geometry range before an automatic building candidate is marked fillable.

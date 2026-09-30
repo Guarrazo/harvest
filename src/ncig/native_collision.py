@@ -4,13 +4,14 @@ import copy
 import math
 from typing import Any
 
+from .interior_quality import door_opening_width
 from .reference_nodes import collision_node, quat_yaw
 
 FLOOR_HEIGHT = 3.2
 WALL_HEIGHT = 3.0
 WALL_THICKNESS = 0.12
 FLOOR_THICKNESS = 0.10
-DOOR_GAP = 1.0
+DOOR_GAP = 1.05
 
 
 def _with_template(template: dict[str, Any] | None, generated: dict[str, Any], *, name: str, node_ref: str, position: dict[str, float], rotation: dict[str, float]) -> dict[str, Any]:
@@ -135,7 +136,7 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
         w, d = float(room.get("width", 0.0)), float(room.get("depth", 0.0))
         zbase = floor * FLOOR_HEIGHT
 
-        gap = DOOR_GAP
+        gap = door_opening_width(w) or DOOR_GAP
         opening = (w / 2 - gap / 2, w / 2 + gap / 2)
         opening_side = "north" if ry < 0 else "south"
 

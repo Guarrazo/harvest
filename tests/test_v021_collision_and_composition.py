@@ -67,3 +67,28 @@ def test_native_composition_can_emit_real_world_entity_decoration():
     entities = [n for n in result["sectors"][0]["nodes"] if n["type"] == "worldEntityNode"]
     assert len(entities) == 1
     assert entities[0]["data"]["entityTemplate"]["DepotPath"]["$value"].endswith("counter.ent")
+
+
+def test_collision_node_uses_valid_entspawner_defaults():
+    from ncig.reference_nodes import collision_node
+    node = collision_node(
+        name="c",
+        node_ref="$/#c",
+        position={"x": 0, "y": 0, "z": 0},
+        size={"x": 1, "y": 1, "z": 0.1},
+    )
+    shape = node["data"]["compiledData"]["Data"]["Actors"][0]["Shapes"][0]
+    assert shape["Preset"]["$value"] == "Simple Environment Collision"
+    assert shape["Materials"][0]["$value"] == "concrete.physmat"
+
+
+def test_collision_generator_has_continuous_floor():
+    nodes, report = build_room_collisions({
+        "building": {"id": "B", "position": {"x": 0, "y": 0, "z": 0}, "yaw_deg": 0},
+        "rooms": [
+            {"id": "B_F1_R01", "floor": 0, "x": -3, "y": -3, "width": 2, "depth": 2},
+            {"id": "B_F1_R02", "floor": 0, "x": 1, "y": 1, "width": 2, "depth": 2},
+        ],
+    })
+    assert report["floor_node_count"] == 1
+    assert any(str(n.get("nodeRef", "")).endswith("F01_COLL_floor") for n in nodes)

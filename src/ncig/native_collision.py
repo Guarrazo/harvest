@@ -227,7 +227,7 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
                     center_axis = (active_opening[0] + active_opening[1]) * 0.5
                     _append_header_collision(
                         nodes, template, building=building, rid=rid, side=side, floor=floor,
-                        center_axis=center_axis, gap=active_opening[1] - active_opening[0],
+                        gap=active_opening[1] - active_opening[0],
                         x=rx + center_axis, y=ry + d,
                     )
             elif side == "west":

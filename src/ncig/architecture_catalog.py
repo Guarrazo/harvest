@@ -162,15 +162,19 @@ def derive_family(path: str) -> str:
     if not tail:
         return "architecture"
 
-    # Preserve useful building/interior set identity without retaining the individual filename.
-    lowered_tail = [x.lower() for x in tail]
-    if len(tail) >= 3 and lowered_tail[0] == "common" and lowered_tail[1] == "int":
-        return "/".join(tail[:3]).lower()
-    if "interior" in lowered_tail:
-        j = lowered_tail.index("interior")
-        upto = tail[: j + 1]
-        return "/".join(upto[: min(len(upto), 4)]).lower()
-    return "/".join(tail[: min(3, len(tail))]).lower()
+    # The final path component is the mesh filename, never part of the architecture
+    # family. Keeping it here made every flat resource directory look like a different
+    # family (for example common/tech_corridor/<wall>.mesh), which prevented walls,
+    # doors, frames and windows from sharing a coherent kit.
+    dirs = tail[:-1] if str(tail[-1]).lower().endswith(".mesh") else tail
+    if not dirs:
+        return "architecture"
+
+    lowered_dirs = [x.lower() for x in dirs]
+    if "interior" in lowered_dirs:
+        j = lowered_dirs.index("interior")
+        return "/".join(dirs[: min(len(dirs), j + 2)]).lower()
+    return "/".join(dirs[: min(3, len(dirs))]).lower()
 
 
 def score_structural_candidate(path: str, roles: Iterable[str], structural_class: str, dimensions: dict[str, Any]) -> tuple[int, list[str]]:

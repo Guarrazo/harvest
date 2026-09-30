@@ -10,7 +10,7 @@ FORMAT = "ncig-interior-quality-v1"
 # These are engineering targets for generated human-scale openings, not claims about
 # an official Cyberpunk 2077 player-collision specification.
 MIN_CLEAR_WIDTH_M = 0.95
-PREFERRED_CLEAR_WIDTH_M = 1.05
+PREFERRED_CLEAR_WIDTH_M = 1.20
 PREFERRED_CLEAR_HEIGHT_M = 2.10
 
 # The generator's structural taxonomy is intentionally broader than the style layer.
@@ -71,8 +71,14 @@ def style_profile(building_type: str) -> dict[str, Any]:
     }
 
 
-def asset_quality(item: dict[str, Any], cls: str, building_type: str) -> dict[str, Any]:
+def asset_quality(
+    item: dict[str, Any],
+    cls: str,
+    building_type: str,
+    room_kind: str | None = None,
+) -> dict[str, Any]:
     profile = style_profile(building_type)
+    security_room = str(room_kind or "").lower() in {"security", "checkpoint", "guard", "guardroom", "security_room"}
     text = _text(item)
     preferred = [t for t in profile["preferred_tokens"] if _has(text, t)]
     avoid_tokens = profile["wall_avoid_tokens"] if cls == "wall_piece" else profile["door_avoid_tokens"] if cls in {"door_frame", "door_piece"} else ()
@@ -95,15 +101,18 @@ def asset_quality(item: dict[str, Any], cls: str, building_type: str) -> dict[st
             hard_block = True
             reasons.append("glazed_opening_not_partition")
     elif cls in {"door_frame", "door_piece"}:
-        if any(_has(text, token) for token in ("prison", "jail", "cell")):
+        if any(_has(text, token) for token in ("prison", "jail", "cell")) and not security_room:
             hard_block = True
             reasons.append("prison_semantics")
         if any(_has(text, token) for token in ("window", "skylight")):
             hard_block = True
             reasons.append("window_not_door")
         if any(_has(text, token) for token in ("grille", "grating", "cage", "bars", "barred", "gate")):
-            adjustment -= 350.0
-            reasons.append("security_or_barred_door_penalty")
+            if not security_room:
+                adjustment -= 350.0
+                reasons.append("security_or_barred_door_penalty")
+            else:
+                reasons.append("security_room_allows_guard_asset")
 
     if preferred:
         adjustment += min(3, len(preferred)) * 35.0
@@ -133,10 +142,11 @@ def filter_asset_candidates(
     *,
     cls: str,
     building_type: str,
+    room_kind: str | None = None,
 ) -> list[dict[str, Any]]:
     rows = [dict(x) for x in items if isinstance(x, dict)]
     for item in rows:
-        item["_ncig_quality"] = asset_quality(item, cls, building_type)
+        item["_ncig_quality"] = asset_quality(item, cls, building_type, room_kind)
 
     accepted = [x for x in rows if not x["_ncig_quality"]["hard_block"]]
     # Never make generation impossible solely because a tiny catalog is imperfect.

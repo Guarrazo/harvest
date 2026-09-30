@@ -519,7 +519,11 @@ def _door_and_frame(layout: Layout, room: Room, catalog: dict[str, Any], placeme
     door_items = _style_safe_items(_items(catalog, "door_piece", door_family, layout.building.type), "door_piece")
     frame, finfo = _best_item(frame_items, target_length=gap, target_height=DEFAULT_DOOR_HEIGHT)
     door, dinfo = _best_item(door_items, target_length=gap, target_height=DEFAULT_DOOR_HEIGHT)
-    for suffix, cls, item, info in (("frame", "door_frame", frame, finfo), ("door", "door_piece", door, dinfo)):
+    # A door leaf is emitted only when it is explicitly marked collisionless.
+    door_specs = [("frame", "door_frame", frame, finfo)]
+    if door is not None and bool(door.get("collisionless_variant")):
+        door_specs.append(("door", "door_piece", door, dinfo))
+    for suffix, cls, item, info in door_specs:
         if item is None:
             continue
         runtime_mesh = isinstance(item.get("bounds"), dict)

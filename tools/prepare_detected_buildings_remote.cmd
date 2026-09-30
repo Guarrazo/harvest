@@ -37,7 +37,8 @@ if not exist "%CATALOG%" set "CATALOG=build\real_architecture_remote\architectur
 echo NCIG: architecture catalog for detected buildings: %CATALOG%
 "%PYTHONEXE%" -m ncig.cli architecture-assemble --layouts build\generated_auto\layouts.json --catalog "%CATALOG%" --out build\real_architecture_remote\architecture_assembly_auto.json
 if errorlevel 1 exit /b %ERRORLEVEL%
-echo NCIG automatic target pipeline completed.
+echo NCIG automatic city target pipeline completed.
+echo World manifest: build\world_manifest.json
 echo Candidates: build\auto_building_candidates.json
 echo Selected buildings: build\auto_buildings.json
 echo Layouts: build\generated_auto\layouts.json

@@ -1,3 +1,9 @@
+## v0.22.1
+
+- Restore the runtime-aware ceiling surface function required by the 0.22.x architecture pipeline.
+- Use valid entSpawner collision defaults: `Simple Environment Collision` and `concrete.physmat`.
+- Keep the continuous per-floor collision envelope across generated corridors.
+
 ## v0.22.0
 
 - Use runtime mesh bounds without collapsing local X/Y axis identity: wall-like pieces now scale along their actual structural span axis and rotate that axis onto the requested wall run.

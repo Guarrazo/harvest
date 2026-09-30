@@ -112,3 +112,12 @@ def test_thin_runtime_wall_receives_mirrored_visual_face():
     )
     assert len(placements) == 4
     assert sum(1 for p in placements if p["semantic"] == "wall_backface") == 2
+
+
+def test_detected_exterior_entry_collision_gap_is_on_facade_wall():
+    layout = _single_layout(entry={"entry_local_x": 0.0, "entry_local_y": 3.7})
+    nodes, _ = build_room_collisions(layout)
+    south = [n for n in nodes if "_B1_F1_R01_COLL_south_" in n["nodeRef"]]
+    north = [n for n in nodes if "_B1_F1_R01_COLL_north_" in n["nodeRef"]]
+    assert len(south) == 2
+    assert len(north) == 1

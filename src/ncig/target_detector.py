@@ -141,6 +141,9 @@ def _sector_objects(raw: Any, source_file: str) -> list[dict[str, Any]]:
                     "name": name,
                     "resource": resource,
                     "x": pos[0], "y": pos[1], "z": pos[2],
+                    "yaw_deg": _node_yaw(node),
+                    "scale": _node_scale(node),
+                    "dimensions_m": _resource_dimensions(resource),
                     "text": text,
                 })
     return records

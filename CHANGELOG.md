@@ -1,3 +1,11 @@
+## v0.22.7
+
+- Add a city-scale world-data pipeline for large `.streamingsector` exports, using an XY spatial grid for proximity queries instead of full pairwise scans.
+- Accept both World Builder/Object Spawner JSON envelopes and direct single-sector JSON files, including `nodes` + `nodeData` placement exports.
+- Add `detect-city-buildings` and automatically write a compact `build\\world_manifest.json` beside the candidate report.
+- Restrict existing-interior evidence checks to the estimated building footprint (with a small margin), reducing false rejection from neighboring interiors.
+- Add city-pipeline tests for direct sector parsing, spatial indexing and world manifests.
+
 ## v0.22.6
 
 - Correct the corridor/exterior collision orientation and add a solid collision header above 2.20 m door openings.

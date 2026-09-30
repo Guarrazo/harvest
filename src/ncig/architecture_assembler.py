@@ -26,15 +26,28 @@ WALL_BACKFACE_MAX_THICKNESS = 0.08
 
 
 _STYLE_EXCLUDE = {
-    "wall_piece": ("destroyed", "stair", "staircase", "railing", "fence", "cage", "prison", "cell"),
-    "door_frame": ("stair", "staircase", "railing", "fence", "cage", "prison", "cell"),
-    "door_piece": ("stair", "staircase", "railing", "fence", "cage", "prison", "cell"),
+    "wall_piece": (
+        "destroyed", "stair", "staircase", "railing", "fence", "cage", "prison", "cell",
+        "addon", "protector", "corner", "wall_top", "wall_end", "trim", "molding",
+        "panel", "grate", "grid", "bars",
+    ),
+    "door_frame": (
+        "stair", "staircase", "railing", "fence", "cage", "prison", "cell",
+        "grate", "grid", "bars", "security", "guard",
+    ),
+    "door_piece": (
+        "stair", "staircase", "railing", "fence", "cage", "prison", "cell",
+        "grate", "grid", "bars",
+    ),
     "window_piece": ("stair", "staircase", "railing", "fence", "cage", "prison", "cell"),
 }
 
 def _style_safe_items(items: list[dict[str, Any]], cls: str) -> list[dict[str, Any]]:
     banned = _STYLE_EXCLUDE.get(cls, ())
-    safe = [item for item in items if not any(token in (str(item.get("path", "")) + " " + str(item.get("family", ""))).lower() for token in banned)]
+    safe = [
+        item for item in items
+        if not any(token in (str(item.get("path", "")) + " " + str(item.get("family", ""))).lower() for token in banned)
+    ]
     return safe or items
 def _items(catalog: dict[str, Any], cls: str, family: str | None = None, building_type: str | None = None) -> list[dict[str, Any]]:
     tokens = _style_tokens(building_type or "mixed")

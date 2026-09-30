@@ -164,8 +164,10 @@ def derive_family(path: str) -> str:
 
     # Preserve useful building/interior set identity without retaining the individual filename.
     lowered_tail = [x.lower() for x in tail]
+    # v0.22 family identity treated common\\int as a transport namespace. The stable
+    # kit identity is the set below it, e.g. common/int/tech_corridor -> common/tech_corridor.
     if len(tail) >= 3 and lowered_tail[0] == "common" and lowered_tail[1] == "int":
-        return "/".join(tail[:3]).lower()
+        return "/".join((tail[0], tail[2])).lower()
     if "interior" in lowered_tail:
         j = lowered_tail.index("interior")
         upto = tail[: j + 1]

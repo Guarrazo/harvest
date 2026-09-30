@@ -164,7 +164,8 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
                         yaw=float(building.get("yaw_deg", 0.0)),
                     ))
             elif side == "south":
-                parts = _wall_segments(0, w, opening if opening_side == side else None)
+                active_opening = opening if opening_side == side else (entry_opening if entry_side == side else None)
+                parts = _wall_segments(0, w, active_opening)
                 for idx, (a, b) in enumerate(parts, 1):
                     local = _world(building, rx + (a + b) / 2, ry + d, zbase + WALL_HEIGHT / 2)
                     nodes.append(_box(

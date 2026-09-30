@@ -19,8 +19,9 @@ from .runtime_geometry import (
 FORMAT = "ncig-architecture-assembly-v1"
 FLOOR_HEIGHT = 3.2
 CEILING_Z = 3.0
-DEFAULT_DOOR_WIDTH = 1.15
-DEFAULT_DOOR_HEIGHT = 2.10
+DEFAULT_DOOR_WIDTH = 1.25
+DEFAULT_DOOR_HEIGHT = 2.20
+WALL_HEIGHT = 3.00
 WALL_BACKFACE_OFFSET = 0.02
 WALL_BACKFACE_MAX_THICKNESS = 0.08
 
@@ -29,7 +30,7 @@ _STYLE_EXCLUDE = {
     "wall_piece": (
         "destroyed", "stair", "staircase", "railing", "fence", "cage", "prison", "cell",
         "addon", "protector", "corner", "wall_top", "wall_end", "trim", "molding",
-        "panel", "grate", "grid", "bars",
+        "panel", "grate", "grid", "bars", "window", "door", "opening", "top", "end",
     ),
     "door_frame": (
         "stair", "staircase", "railing", "fence", "cage", "prison", "cell",
@@ -517,6 +518,80 @@ def _wall_run(layout: Layout, room: Room, catalog: dict[str, Any], placements: l
                 ))
 
 
+def _wall_header(
+    layout: Layout,
+    room: Room,
+    catalog: dict[str, Any],
+    placements: list[dict[str, Any]],
+    *,
+    side: str,
+    x0: float,
+    y0: float,
+    length: float,
+    opening: tuple[float, float],
+    family: str | None,
+) -> None:
+    """Fill only the lintel band above a doorway so a 2.2 m door cannot be jumped over."""
+    if WALL_HEIGHT <= DEFAULT_DOOR_HEIGHT:
+        return
+    candidates = _style_safe_items(
+        _items(catalog, "wall_piece", family, layout.building.type),
+        "wall_piece",
+    )
+    item, info = _best_item(
+        candidates,
+        target_length=min(length, 3.0),
+        target_height=WALL_HEIGHT - DEFAULT_DOOR_HEIGHT,
+    )
+    if item is None:
+        return
+    a, b = opening
+    span = max(0.05, b - a)
+    runtime_mesh = isinstance(item.get("bounds"), dict)
+    if runtime_mesh:
+        fit_info = linear_fit(
+            item,
+            span=span,
+            height=WALL_HEIGHT - DEFAULT_DOOR_HEIGHT,
+            desired_rotation_deg=0.0 if side in {"north", "south"} else 90.0,
+        )
+        fit = (fit_info or {}).get("scale") or {"x": 1.0, "y": 1.0, "z": 1.0}
+        actual_rotation = float((fit_info or {}).get("rotation_deg", 0.0 if side in {"north", "south"} else 90.0))
+        target_center = (
+            x0 + ((a + b) * 0.5 if side in {"north", "south"} else 0.0),
+            y0 + (0.0 if side in {"north", "south"} else (a + b) * 0.5),
+            room.floor * FLOOR_HEIGHT + DEFAULT_DOOR_HEIGHT + (WALL_HEIGHT - DEFAULT_DOOR_HEIGHT) * 0.5,
+        )
+    else:
+        fit = _fit_scale(item, {"span": span, "height": WALL_HEIGHT - DEFAULT_DOOR_HEIGHT}, "wall_piece")
+        actual_rotation = 0.0 if side in {"north", "south"} else 90.0
+        target_center = None
+    placements.append(_placement(
+        layout,
+        room,
+        item,
+        element_id=f"{room.id}_ARCH_header_{side}",
+        local_x=target_center[0] if target_center else (
+            x0 + ((a + b) * 0.5 if side in {"north", "south"} else 0.0)
+        ),
+        local_y=target_center[1] if target_center else (
+            y0 + (0.0 if side in {"north", "south"} else (a + b) * 0.5)
+        ),
+        local_z=target_center[2] - room.floor * FLOOR_HEIGHT if target_center else DEFAULT_DOOR_HEIGHT,
+        rotation_deg=actual_rotation,
+        semantic="door_header",
+        target={
+            "side": side,
+            "opening": opening,
+            "height_m": WALL_HEIGHT - DEFAULT_DOOR_HEIGHT,
+            "fit_scale": fit,
+        },
+        info=info,
+        scale=fit,
+        target_bbox_center=target_center,
+    ))
+
+
 def _door_and_frame(layout: Layout, room: Room, catalog: dict[str, Any], placements: list[dict[str, Any]], frame_family: str | None, door_family: str | None, wall_family: str | None = None) -> tuple[tuple[float, float], str]:
     gap = min(DEFAULT_DOOR_WIDTH, room.width * 0.40)
     room_center_x = room.x + room.width / 2.0
@@ -690,23 +765,39 @@ def assemble_room(layout: Layout, room: Room, catalog: dict[str, Any], family: s
         _wall_run(layout, room, catalog, placements, side="south", x0=room.x, y0=room.y + room.depth,
                   length=room.width, rotation_deg=0.0,
                   opening=entry_gap if entry_side == "south" else None, family=wall_family)
+        if entry_gap is not None and entry_side == "south":
+            _wall_header(layout, room, catalog, placements, side="south", x0=room.x, y0=room.y + room.depth,
+                         length=room.width, opening=entry_gap, family=wall_family)
         _wall_run(layout, room, catalog, placements, side="north", x0=room.x, y0=room.y,
                   length=room.width, rotation_deg=0.0, opening=door_gap, family=wall_family)
+        _wall_header(layout, room, catalog, placements, side="north", x0=room.x, y0=room.y,
+                     length=room.width, opening=door_gap, family=wall_family)
     else:
         _wall_run(layout, room, catalog, placements, side="north", x0=room.x, y0=room.y,
                   length=room.width, rotation_deg=0.0,
                   opening=entry_gap if entry_side == "north" else None, family=wall_family)
+        if entry_gap is not None and entry_side == "north":
+            _wall_header(layout, room, catalog, placements, side="north", x0=room.x, y0=room.y,
+                         length=room.width, opening=entry_gap, family=wall_family)
         _wall_run(layout, room, catalog, placements, side="south", x0=room.x, y0=room.y + room.depth,
                   length=room.width, rotation_deg=0.0, opening=door_gap, family=wall_family)
+        _wall_header(layout, room, catalog, placements, side="south", x0=room.x, y0=room.y + room.depth,
+                     length=room.width, opening=door_gap, family=wall_family)
     peers = floor_rooms or [room]
     if not _has_neighbor(room, peers, "west"):
         _wall_run(layout, room, catalog, placements, side="west", x0=room.x, y0=room.y,
                   length=room.depth, rotation_deg=90.0,
                   opening=entry_gap if entry_side == "west" else None, family=wall_family)
+        if entry_gap is not None and entry_side == "west":
+            _wall_header(layout, room, catalog, placements, side="west", x0=room.x, y0=room.y,
+                         length=room.depth, opening=entry_gap, family=wall_family)
     else:
         pass
     _wall_run(layout, room, catalog, placements, side="east", x0=room.x + room.width, y0=room.y,
-              length=room.depth, rotation_deg=90.0,
+
+    if entry_gap is not None and entry_side == "east":
+        _wall_header(layout, room, catalog, placements, side="east", x0=room.x + room.width, y0=room.y,
+                     length=room.depth, opening=entry_gap, family=wall_family)              length=room.depth, rotation_deg=90.0,
               opening=entry_gap if entry_side == "east" else None, family=wall_family)
     _window(layout, room, catalog, placements, fm.get("window_piece", family))
     return placements

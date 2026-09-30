@@ -19,11 +19,42 @@ def stable_seed(building: BuildingAnchor) -> int:
     return int(hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16], 16)
 
 
-def weighted_rule(rng: random.Random, rules: list[RoomRule], banned: set[str]) -> RoomRule:
-    candidates = [r for r in rules if r.kind not in banned]
-    if not candidates:
-        candidates = rules
+def weighted_rule(
+    rng: random.Random,
+    rules: list[RoomRule],
+    banned: set[str],
+    *,
+    width: float | None = None,
+    depth: float | None = None,
+) -> RoomRule:
+    """Weighted room-rule selection with optional dimension fitting.
+
+    The width/depth filters keep room kinds within their declared rule envelope
+    whenever at least one fitting rule exists. Older three-argument callers remain
+    fully compatible.
+    """
+    candidates = [r for r in rules if r.kind not in banned] or list(rules)
+    if width is not None or depth is not None:
+        def violation(rule: RoomRule) -> float:
+            score = 0.0
+            if width is not None:
+                if width < rule.min_w:
+                    score += rule.min_w - width
+                elif width > rule.max_w:
+                    score += width - rule.max_w
+            if depth is not None:
+                if depth < rule.min_d:
+                    score += rule.min_d - depth
+                elif depth > rule.max_d:
+                    score += depth - rule.max_d
+            return score
+
+        fitted = [r for r in candidates if violation(r) <= 1e-9]
+        candidates = fitted or sorted(candidates, key=lambda r: (violation(r), -r.weight, r.kind))
+
     total = sum(r.weight for r in candidates)
+    if total <= 0:
+        return candidates[0]
     point = rng.uniform(0, total)
     acc = 0.0
     for rule in candidates:
@@ -92,7 +123,13 @@ def generate_floor_rooms(
             d = side_depth
             if w < 1.4 or d < 1.4:
                 continue
-            rule = weighted_rule(rng, rules, banned_once if room_counter < 4 else set())
+            rule = weighted_rule(
+                rng,
+                rules,
+                banned_once if room_counter < 4 else set(),
+                width=w,
+                depth=d,
+            )
             if room_counter < 1:
                 rule = next((r for r in rules if r.kind in {"shopfloor", "living", "open_office", "workshop"}), rule)
             room = Room(

@@ -25,3 +25,28 @@ def test_family_candidates_falls_back_to_family_group_before_global():
     ]}
     rows = family_candidates(catalog, "wall_piece", "common/int/missing")
     assert {x["family"] for x in rows} == {"common/int/shopkit", "common/int/otherkit"}
+
+
+def test_runtime_linear_fit_honors_local_span_axis_and_rotation():
+    from ncig.runtime_geometry import linear_fit
+    item = {"bounds": {"min": {"x": -0.1, "y": -1.5, "z": 0.0}, "max": {"x": 0.1, "y": 1.5, "z": 3.0}, "dimensions_m": {"x": 0.2, "y": 3.0, "z": 3.0}}}
+    fit = linear_fit(item, span=4.5, height=3.0, desired_rotation_deg=0.0)
+    assert fit["span_axis"] == "y"
+    assert fit["rotation_deg"] == -90.0
+    assert abs(fit["scale"]["y"] - 1.5) < 1e-6
+
+def test_runtime_surface_fit_preserves_local_axis_mapping():
+    from ncig.runtime_geometry import preferred_surface_rotation, surface_scale, surface_world_dimensions
+    item = {"bounds": {"min": {"x": -5.0, "y": -1.0, "z": -0.1}, "max": {"x": 5.0, "y": 1.0, "z": 0.1}, "dimensions_m": {"x": 10.0, "y": 2.0, "z": 0.2}}}
+    orientation = preferred_surface_rotation(item, 2.0, 10.0)
+    assert orientation == 90.0
+    assert surface_world_dimensions(item, orientation) == (2.0, 10.0)
+    scale = surface_scale(item, 2.0, 10.0, orientation)
+    assert abs(scale["x"] - 1.0) < 1e-6
+    assert abs(scale["y"] - 1.0) < 1e-6
+
+def test_runtime_pivot_alignment_uses_real_bbox_center():
+    from ncig.runtime_geometry import align_node_local_position
+    item = {"bounds": {"min": {"x": 1.0, "y": 2.0, "z": 0.0}, "max": {"x": 3.0, "y": 4.0, "z": 2.0}, "dimensions_m": {"x": 2.0, "y": 2.0, "z": 2.0}}}
+    pos = align_node_local_position(item, {"x": 1.0, "y": 1.0, "z": 1.0}, 0.0, (0.0, 0.0, 1.0))
+    assert pos == (-2.0, -3.0, 0.0)

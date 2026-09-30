@@ -10,7 +10,7 @@ FLOOR_HEIGHT = 3.2
 WALL_HEIGHT = 3.0
 WALL_THICKNESS = 0.12
 FLOOR_THICKNESS = 0.10
-DOOR_GAP = 1.0
+DOOR_GAP = 1.30
 
 
 def _with_template(template: dict[str, Any] | None, generated: dict[str, Any], *, name: str, node_ref: str, position: dict[str, float], rotation: dict[str, float]) -> dict[str, Any]:
@@ -62,6 +62,18 @@ def _wall_segments(start: float, length: float, opening: tuple[float, float] | N
     if b < length - 0.05:
         out.append((b, length))
     return out
+
+
+def _has_neighbor(room: dict[str, Any], floor_rooms: list[dict[str, Any]], side: str, eps: float = 0.05) -> bool:
+    for other in floor_rooms:
+        if str(other.get("id")) == str(room.get("id")):
+            continue
+        overlap_y = min(float(room.get("y", 0.0)) + float(room.get("depth", 0.0)), float(other.get("y", 0.0)) + float(other.get("depth", 0.0))) - max(float(room.get("y", 0.0)), float(other.get("y", 0.0)))
+        if side == "west" and abs(float(room.get("x", 0.0)) - (float(other.get("x", 0.0)) + float(other.get("width", 0.0)))) <= eps and overlap_y > eps:
+            return True
+        if side == "east" and abs((float(room.get("x", 0.0)) + float(room.get("width", 0.0))) - float(other.get("x", 0.0))) <= eps and overlap_y > eps:
+            return True
+    return False
 
 
 def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
@@ -143,6 +155,8 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
                         yaw=float(building.get("yaw_deg", 0.0)),
                     ))
             elif side == "west":
+                if _has_neighbor(room, floor_rooms, "west"):
+                    continue
                 local = _world(building, rx, ry + d / 2, zbase + WALL_HEIGHT / 2)
                 nodes.append(_box(
                     template,

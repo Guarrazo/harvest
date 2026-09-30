@@ -31,6 +31,8 @@ class BuildingAnchor:
     entry_local_x: float | None = None
     entry_local_y: float | None = None
     entry_yaw_deg: float | None = None
+    # Exterior facade openings discovered in the real-world sector export.
+    detected_openings: tuple[dict[str, Any], ...] = ()
 
 
 @dataclass

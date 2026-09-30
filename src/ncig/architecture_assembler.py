@@ -931,8 +931,9 @@ def build_architecture_assembly(layouts: list[Layout], catalog: dict[str, Any]) 
             entry_key = (entry_target[0].id, entry_target[1]) if entry_target else None
             for room in floor_rooms:
                 all_placements.extend(assemble_room(layout, room, catalog, family, class_families, floor_rooms, entry_key))
-            if floor == 0:
-                _detected_windows(layout, catalog, all_placements, family, class_families)
+            # Detected facade windows are retained as building evidence. They are not
+            # rendered until the wall generator can cut their real opening instead of
+            # placing glass through a solid procedural wall.
         by_class = defaultdict(int)
         unresolved = []
         for p in all_placements:

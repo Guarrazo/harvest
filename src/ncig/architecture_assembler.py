@@ -518,7 +518,8 @@ def _has_neighbor(room: Room, floor_rooms: list[Room], side: str, eps: float = 0
 
 
 def assemble_room(layout: Layout, room: Room, catalog: dict[str, Any], family: str | None,
-                  class_families: dict[str, str] | None = None,\n                  floor_rooms: list[Room] | None = None) -> list[dict[str, Any]]:
+                  class_families: dict[str, str] | None = None,
+                  floor_rooms: list[Room] | None = None) -> list[dict[str, Any]]:
     """Assemble room shell/details; floor and ceiling are generated once per floor."""
     placements: list[dict[str, Any]] = []
     fm = class_families or {}

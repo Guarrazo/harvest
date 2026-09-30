@@ -1,3 +1,12 @@
+## v0.23.0
+
+- Add style-aware interior asset quality filtering for walls and doors, including explicit penalties/blocks for grille, railing, prison/cell and other non-partition semantics.
+- Add deterministic variety selection among near-equivalent architectural candidates instead of always selecting the same first-ranked mesh.
+- Increase generated door clear-width targeting to human-scale openings and report clear-width/height diagnostics.
+- Add an explicit exterior perimeter collision shell on every generated floor, independent of room-shell coverage.
+- Keep collision door openings synchronized with the visual door clear-width policy.
+- Preserve a last-resort catalog fallback when semantic filtering exhausts all candidates, with the mismatch recorded in selection metadata.
+
 ## v0.22.3
 
 - Keep generated room bays flush with the building footprint so structural walls meet instead of leaving artificial offsets.

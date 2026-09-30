@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import math
+import re
 from pathlib import Path
 from typing import Any
 
@@ -133,7 +134,7 @@ def _materialize_mesh(template: dict[str, Any], placement: dict[str, Any], build
 def _build_sector(template_sector: dict[str, Any], layout_sector: dict[str, Any], *, building_id: str) -> dict[str, Any]:
     out = copy.deepcopy(template_sector)
     floor = int(layout_sector.get("floor", 0))
-    out["name"] = str(layout_sector.get("id") or f"{building_id}_sector_F{floor + 1:02d}")
+    out["name"] = re.sub(r"[\s]+", "_", str(layout_sector.get("id") or f"{building_id}_sector_f{floor + 1:02d}").lower())
     out["category"] = "Interior"
     out["level"] = floor + 1
     out["variantIndices"] = copy.deepcopy(template_sector.get("variantIndices", [0]))

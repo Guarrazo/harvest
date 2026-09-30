@@ -1,3 +1,11 @@
+## v0.21.10
+
+- Normalize native Object Spawner sector names from layout IDs before export: lowercase letters and replace whitespace with underscores.
+- Prevent existing `*_sector_F01` layout IDs from bypassing the lowercase fallback and triggering WolvenKit install warnings.
+## v0.21.9
+
+- Generate native Object Spawner sector filenames with lowercase floor identifiers (f01, f02, ...), avoiding WolvenKit install warnings about capital letters.
+- Keep collision floor routing case-insensitive so existing F## references remain compatible.
 ## v0.21.1
 
 - Architectural fit now uses complete filename dimensions as a narrowly bounded pre-runtime hint; runtime bounds remain authoritative.

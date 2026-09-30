@@ -85,7 +85,6 @@ def _append_header_collision(
     rid: str,
     side: str,
     floor: int,
-    center_axis: float,
     gap: float,
     x: float,
     y: float,

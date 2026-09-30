@@ -10,7 +10,7 @@ FLOOR_HEIGHT = 3.2
 WALL_HEIGHT = 3.0
 WALL_THICKNESS = 0.12
 FLOOR_THICKNESS = 0.10
-DOOR_GAP = 1.30
+DOOR_GAP = 1.15
 
 
 def _with_template(template: dict[str, Any] | None, generated: dict[str, Any], *, name: str, node_ref: str, position: dict[str, float], rotation: dict[str, float]) -> dict[str, Any]:
@@ -125,13 +125,34 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
         w, d = float(room.get("width", 0.0)), float(room.get("depth", 0.0))
         zbase = floor * FLOOR_HEIGHT
 
-        gap = DOOR_GAP
+        gap = min(DOOR_GAP, w * 0.40 if w > 0 else DOOR_GAP)
         opening = (w / 2 - gap / 2, w / 2 + gap / 2)
-        opening_side = "north" if ry < 0 else "south"
+        # The visual generator puts the room door on the corridor-facing wall:
+        # positive-Y rooms use north; negative-Y rooms use south. The old collision
+        # code inverted this and opened the exterior wall instead.
+        opening_side = "north" if ry >= 0 else "south"
+        entry_opening: tuple[float, float] | None = None
+        entry_side: str | None = None
+        if floor == 0 and building.get("entry_local_x") is not None and building.get("entry_local_y") is not None:
+            ex, ey = float(building["entry_local_x"]), float(building["entry_local_y"])
+            distances = {
+                "north": abs(ey - ry),
+                "south": abs(ey - (ry + d)),
+                "west": abs(ex - rx),
+                "east": abs(ex - (rx + w)),
+            }
+            entry_side = min(distances, key=distances.get)
+            if entry_side in {"north", "south"}:
+                c = max(gap * 0.5, min(w - gap * 0.5, ex - rx))
+            else:
+                gap = min(DOOR_GAP, d * 0.40 if d > 0 else DOOR_GAP)
+                c = max(gap * 0.5, min(d - gap * 0.5, ey - ry))
+            entry_opening = (c - gap * 0.5, c + gap * 0.5)
 
         for side in ("north", "south", "west", "east"):
             if side == "north":
-                parts = _wall_segments(0, w, opening if opening_side == side else None)
+                active_opening = opening if opening_side == side else (entry_opening if entry_side == side else None)
+                parts = _wall_segments(0, w, active_opening)
                 for idx, (a, b) in enumerate(parts, 1):
                     local = _world(building, rx + (a + b) / 2, ry, zbase + WALL_HEIGHT / 2)
                     nodes.append(_box(
@@ -157,6 +178,19 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
             elif side == "west":
                 if _has_neighbor(room, floor_rooms, "west"):
                     continue
+                if entry_side == "west":
+                    parts = _wall_segments(0, d, entry_opening)
+                    for idx, (a, b) in enumerate(parts, 1):
+                        local = _world(building, rx, ry + (a + b) / 2, zbase + WALL_HEIGHT / 2)
+                        nodes.append(_box(
+                            template,
+                            name=f"[NCIG COLLISION] {rid}_{side}_{idx}",
+                            ref=f"$/#{building.get('id','building')}_{rid}_COLL_{side}_{idx}",
+                            pos=local,
+                            half=(WALL_THICKNESS / 2, (b - a) / 2, WALL_HEIGHT / 2),
+                            yaw=float(building.get("yaw_deg", 0.0)) + 90,
+                        ))
+                    continue
                 local = _world(building, rx, ry + d / 2, zbase + WALL_HEIGHT / 2)
                 nodes.append(_box(
                     template,
@@ -167,6 +201,19 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
                     yaw=float(building.get("yaw_deg", 0.0)) + 90,
                 ))
             else:
+                if entry_side == "east":
+                    parts = _wall_segments(0, d, entry_opening)
+                    for idx, (a, b) in enumerate(parts, 1):
+                        local = _world(building, rx + w, ry + (a + b) / 2, zbase + WALL_HEIGHT / 2)
+                        nodes.append(_box(
+                            template,
+                            name=f"[NCIG COLLISION] {rid}_{side}_{idx}",
+                            ref=f"$/#{building.get('id','building')}_{rid}_COLL_{side}_{idx}",
+                            pos=local,
+                            half=(WALL_THICKNESS / 2, (b - a) / 2, WALL_HEIGHT / 2),
+                            yaw=float(building.get("yaw_deg", 0.0)) + 90,
+                        ))
+                    continue
                 local = _world(building, rx + w, ry + d / 2, zbase + WALL_HEIGHT / 2)
                 nodes.append(_box(
                     template,

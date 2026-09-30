@@ -26,7 +26,7 @@ if not defined PYTHONEXE (
 )
 call "%~dp0prepare_architecture_remote.cmd" "%SOURCE%"
 if errorlevel 1 exit /b %ERRORLEVEL%
-"%PYTHONEXE%" -m ncig.cli detect-buildings --input "%SECTORS%" --out build\auto_building_candidates.json
+"%PYTHONEXE%" -m ncig.cli detect-city-buildings --input "%SECTORS%" --out build\auto_building_candidates.json
 if errorlevel 1 exit /b %ERRORLEVEL%
 "%PYTHONEXE%" -m ncig.cli candidates-to-buildings --input build\auto_building_candidates.json --out build\auto_buildings.json --min-score 75 --max-count %MAXCOUNT%
 if errorlevel 1 exit /b %ERRORLEVEL%

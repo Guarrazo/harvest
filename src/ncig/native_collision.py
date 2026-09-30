@@ -11,6 +11,7 @@ WALL_HEIGHT = 3.0
 WALL_THICKNESS = 0.12
 FLOOR_THICKNESS = 0.10
 DOOR_GAP = 1.25
+DOOR_HEIGHT = 2.20
 
 
 def _with_template(template: dict[str, Any] | None, generated: dict[str, Any], *, name: str, node_ref: str, position: dict[str, float], rotation: dict[str, float]) -> dict[str, Any]:
@@ -89,10 +90,10 @@ def _append_header_collision(
     x: float,
     y: float,
 ) -> None:
-    remaining_h = max(0.0, WALL_HEIGHT - DEFAULT_DOOR_HEIGHT)
+    remaining_h = max(0.0, WALL_HEIGHT - DOOR_HEIGHT)
     if remaining_h <= 0.02:
         return
-    z = floor * FLOOR_HEIGHT + DEFAULT_DOOR_HEIGHT + remaining_h * 0.5
+    z = floor * FLOOR_HEIGHT + DOOR_HEIGHT + remaining_h * 0.5
     local = _world(building, x, y, z)
     if side in {"north", "south"}:
         half = (gap * 0.5, WALL_THICKNESS / 2, remaining_h * 0.5)

@@ -42,9 +42,9 @@ def test_collision_door_gap_is_on_corridor_wall_not_exterior_wall():
 def test_detected_entry_opens_the_external_wall():
     building = BuildingAnchor(
         "B1", "test", "commercial", Vec3(0, 0, 0), 0, 8, 8, 1,
-        entry_local_x=0.0, entry_local_y=-2.8, entry_yaw_deg=-90.0,
+        entry_local_x=0.0, entry_local_y=0.6, entry_yaw_deg=90.0,
     )
-    room = Room("B1_F1_R01", "shopfloor", 0, -4, -4, 8, 3.2)
+    room = Room("B1_F1_R01", "shopfloor", 0, -4, 0.6, 8, 3.2)
     sector = Sector("B1_sector_F01", "B1", 0, "interior", Vec3(-4, -4, -1), Vec3(4, 4, 4), [room.id])
     layout = Layout(building, [room], [], [sector], [])
     dims = lambda l, w, h: {"source": "filename_hint", "metres": {"l": l, "w": w, "h": h}, "complete": True}
@@ -69,6 +69,7 @@ def test_detected_entry_opens_the_external_wall():
     placements = out["buildings"][0]["placements"]
     entry_doors = [p for p in placements if p["id"].endswith("_ARCH_entry_door")]
     assert len(entry_doors) == 1
+    assert not any(p["id"].endswith("_ARCH_door") for p in placements)
     external_north = [
         p for p in placements
         if p["class"] == "wall_piece"

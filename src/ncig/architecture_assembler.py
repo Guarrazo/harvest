@@ -112,7 +112,13 @@ def _entry_door_and_frame(
     door_items = _style_safe_items(_items(catalog, "door_piece", door_family, layout.building.type), "door_piece")
     frame, finfo = _best_item(frame_items, target_length=gap, target_height=DEFAULT_DOOR_HEIGHT)
     door, dinfo = _best_item(door_items, target_length=gap, target_height=DEFAULT_DOOR_HEIGHT)
-    for suffix, cls, item, info in (("frame", "door_frame", frame, finfo), ("door", "door_piece", door, dinfo)):
+    # Structural door leaves can carry their own collision even when the doorway shell
+    # is intentionally open. Emit the leaf only when the catalog explicitly identifies
+    # a collisionless variant; otherwise the doorway stays physically traversable.
+    door_specs = [("frame", "door_frame", frame, finfo)]
+    if door is not None and bool(door.get("collisionless_variant")):
+        door_specs.append(("door", "door_piece", door, dinfo))
+    for suffix, cls, item, info in door_specs:
         if item is None:
             continue
         runtime_mesh = isinstance(item.get("bounds"), dict)

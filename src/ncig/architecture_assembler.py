@@ -32,7 +32,7 @@ _STYLE_EXCLUDE = {
 
 def _style_safe_items(items: list[dict[str, Any]], cls: str) -> list[dict[str, Any]]:
     banned = _STYLE_EXCLUDE.get(cls, ())
-    safe = [item for item in items if not any(token in f"{item.get("path", "")} {item.get("family", "")}".lower() for token in banned)]
+    safe = [item for item in items if not any(token in (str(item.get("path", "")) + " " + str(item.get("family", ""))).lower() for token in banned)]
     return safe or items
 
 def _items(catalog: dict[str, Any], cls: str, family: str | None = None, building_type: str | None = None) -> list[dict[str, Any]]:

@@ -34,6 +34,7 @@ from .native_architecture import write_native_architecture_export
 from .native_architecture_audit import write_native_architecture_audit
 from .architecture_bounds import build_bounds_targets, merge_bounds_file
 from .target_detector import load_world_records, detect_building_candidates, candidates_to_buildings
+from .city_pipeline import load_city_records, detect_city_buildings
 
 
 def cmd_generate(args: argparse.Namespace) -> int:
@@ -506,6 +507,24 @@ def _cmd_detect_buildings(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_detect_city_buildings(args: argparse.Namespace) -> int:
+    records, manifest = load_city_records(args.input)
+    report = detect_city_buildings(records, cluster_radius_m=args.radius)
+    report["world_manifest"] = manifest
+    write_json(args.out, report)
+    manifest_out = Path(args.out).with_name("world_manifest.json")
+    write_json(manifest_out, manifest)
+    print(json.dumps({
+        "written": args.out,
+        "manifest": str(manifest_out),
+        "json_files": manifest["json_file_count"],
+        "input_records": len(records),
+        "candidate_count": report["candidate_count"],
+        "invalid_files": manifest["invalid_file_count"],
+    }, indent=2, ensure_ascii=False))
+    return 0
+
+
 def _cmd_candidates_to_buildings(args: argparse.Namespace) -> int:
     report = json.loads(Path(args.input).read_text(encoding="utf-8"))
     result = candidates_to_buildings(report, min_score=args.min_score, max_count=args.max_count, include_review=args.include_review)
@@ -819,6 +838,12 @@ def build_parser() -> argparse.ArgumentParser:
     db.add_argument("--out", required=True, help="ncig-building-candidates-v1 JSON")
     db.add_argument("--radius", type=float, default=18.0, help="Architecture-to-entrance search radius in metres")
     db.set_defaults(func=_cmd_detect_buildings)
+
+    dcity = sub.add_parser("detect-city-buildings", help="City-scale detector for a large default/streamingsector JSON export")
+    dcity.add_argument("--input", required=True, help="Directory or single JSON export from the base-game world")
+    dcity.add_argument("--out", required=True, help="ncig-city-building-candidates-v1 JSON")
+    dcity.add_argument("--radius", type=float, default=18.0, help="Architecture-to-entrance search radius in metres")
+    dcity.set_defaults(func=_cmd_detect_city_buildings)
 
     cb = sub.add_parser("candidates-to-buildings", help="Convert automatic building candidates into NCIG building anchors")
     cb.add_argument("--input", required=True, help="ncig-building-candidates-v1 JSON")

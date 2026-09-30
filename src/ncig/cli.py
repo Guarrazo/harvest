@@ -81,7 +81,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
             )
 
     summary = {
-        "generator_version": "0.22.6",
+        "generator_version": "0.22.7",
         "input_buildings": len(buildings),
         "generated": len(layouts),
         "failed": len(all_errors),

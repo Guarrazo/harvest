@@ -121,7 +121,7 @@ def build_native_composition(
             ref = str(node.get("nodeRef", ""))
             floor = 0
             # Refs use <building>_<room>_COLL_... and room IDs contain F##.
-            match = re.search(r"_f(\d{1,2})(?:_r|_coll_floor)", ref, re.IGNORECASE)
+            match = re.search(r"_f(\d{1,2})_r", ref, re.IGNORECASE)
             if match:
                 floor = max(0, int(match.group(1)) - 1)
             by_coll_floor.setdefault(floor, []).append(node)
@@ -151,7 +151,7 @@ def build_native_composition(
         "streaming_margin_m": float(streaming_margin_m),
         "include_collisions": bool(include_collisions),
         "decoration_supplied": bool(decoration),
-        "collision_policy": "continuous_floor_per_floor_plus_room_shell_walls_with_door_openings" if include_collisions else "disabled",
+        "collision_policy": "room_shell_boxes_with_door_openings" if include_collisions else "disabled",
         "native_export_generated": True,
         "note": "Mesh nodes are cloned from the real worldMeshNode template; collision boxes use the observed entSpawner serializer shape; decoration nodes use the real worldEntityNode template. Physical fit still requires in-game validation.",
     }

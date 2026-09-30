@@ -246,12 +246,7 @@ def _tile_axis(total: float, piece: float | None) -> list[tuple[float, float, fl
     return [(actual * (i + 0.5), actual, scale) for i in range(count)]
 
 
-def _floor_bounds(rooms: list[Room], building: Any | None = None) -> tuple[float, float, float, float]:
-    if building is not None:
-        width = float(getattr(building, "width_m", 0.0))
-        depth = float(getattr(building, "depth_m", 0.0))
-        if width > 0.0 and depth > 0.0:
-            return (-width * 0.5, width * 0.5, -depth * 0.5, depth * 0.5)
+def _floor_bounds(rooms: list[Room]) -> tuple[float, float, float, float]:
     return (
         min(r.x for r in rooms),
         max(r.x + r.width for r in rooms),
@@ -263,7 +258,7 @@ def _floor_bounds(rooms: list[Room], building: Any | None = None) -> tuple[float
 def _floor_surface(layout: Layout, floor_rooms: list[Room], catalog: dict[str, Any], placements: list[dict[str, Any]], family: str | None) -> None:
     if not floor_rooms:
         return
-    min_x, max_x, min_y, max_y = _floor_bounds(floor_rooms, layout.building)
+    min_x, max_x, min_y, max_y = _floor_bounds(floor_rooms)
     width, depth = max_x - min_x, max_y - min_y
     floor = floor_rooms[0].floor
     item, info = _best_item(_items(catalog, "floor_piece", family, layout.building.type),
@@ -425,7 +420,7 @@ def _window(layout: Layout, room: Room, catalog: dict[str, Any], placements: lis
 def _ceiling_surface(layout: Layout, floor_rooms: list[Room], catalog: dict[str, Any], placements: list[dict[str, Any]], family: str | None) -> None:
     if not floor_rooms:
         return
-    min_x, max_x, min_y, max_y = _floor_bounds(floor_rooms, layout.building)
+    min_x, max_x, min_y, max_y = _floor_bounds(floor_rooms)
     width, depth = max_x - min_x, max_y - min_y
     floor = floor_rooms[0].floor
     item, info = _best_item(
@@ -488,34 +483,6 @@ def _ceiling_surface(layout: Layout, floor_rooms: list[Room], catalog: dict[str,
             ))
 
 
-def assemble_room(layout: Layout, room: Room, catalog: dict[str, Any], family: str | None,
-                  class_families: dict[str, str] | None = None) -> list[dict[str, Any]]:
-    """Assemble room shell/details; floor and ceiling are generated once per floor."""
-    placements: list[dict[str, Any]] = []
-    fm = class_families or {}
-    door_gap, _ = _door_and_frame(
-        layout, room, catalog, placements,
-        fm.get("door_frame", family), fm.get("door_piece", family),
-    )
-    wall_family = fm.get("wall_piece", family)
-    if room.y >= 0:
-        _wall_run(layout, room, catalog, placements, side="south", x0=room.x, y0=room.y + room.depth,
-                  length=room.width, rotation_deg=0.0, family=wall_family)
-        _wall_run(layout, room, catalog, placements, side="north", x0=room.x, y0=room.y,
-                  length=room.width, rotation_deg=0.0, opening=door_gap, family=wall_family)
-    else:
-        _wall_run(layout, room, catalog, placements, side="north", x0=room.x, y0=room.y,
-                  length=room.width, rotation_deg=0.0, family=wall_family)
-        _wall_run(layout, room, catalog, placements, side="south", x0=room.x, y0=room.y + room.depth,
-                  length=room.width, rotation_deg=0.0, opening=door_gap, family=wall_family)
-    _wall_run(layout, room, catalog, placements, side="west", x0=room.x, y0=room.y,
-              length=room.depth, rotation_deg=90.0, family=wall_family)
-    _wall_run(layout, room, catalog, placements, side="east", x0=room.x + room.width, y0=room.y,
-              length=room.depth, rotation_deg=90.0, family=wall_family)
-    _window(layout, room, catalog, placements, fm.get("window_piece", family))
-    return placements
-
-
 def build_architecture_assembly(layouts: list[Layout], catalog: dict[str, Any]) -> dict[str, Any]:
     buildings: list[dict[str, Any]] = []
     for layout in layouts:
@@ -529,6 +496,109 @@ def build_architecture_assembly(layouts: list[Layout], catalog: dict[str, Any]) 
             _ceiling_surface(layout, floor_rooms, catalog, all_placements, class_families.get("ceiling_piece", family))
             for room in floor_rooms:
                 all_placements.extend(assemble_room(layout, room, catalog, family, class_families))
+        by_class = defaultdict(int)
+        unresolved = []
+        for p in all_placements:
+            by_class[str(p.get("class"))] += 1
+            if not p.get("resource"):
+                unresolved.append(p["id"])
+        buildings.append({
+            "id": layout.building.id,
+            "floors": layout.building.floors,
+            "rooms": len(layout.rooms),
+            "placements": all_placements,
+            "placement_count": len(all_placements),
+            "placement_counts": dict(sorted(by_class.items())),
+            "unresolved_count": len(unresolved),
+            "unresolved": unresolved,
+            "requires_bounds_validation": True,
+            "architecture_kit": family_info,
+            "selected_family": family,
+            "class_families": class_family_info,
+            "family_coherence": all((not p.get("resource") or str(p.get("family")) == family or bool(p.get("compatible_family_fallback"))) for p in all_placements),
+        })
+    return {
+        "format": FORMAT,
+        "source_catalog_format": catalog.get("format"),
+        "source_catalog_selected_count": catalog.get("selected_count"),
+        "buildings": buildings,
+        "notes": [
+            "Resources are selected from the real harvested architecture catalog.",
+            "Filename dimensions are hints only; mesh bounds must be verified before final placement.",
+            "This assembly emits resource-bound world-plan intent, not a fabricated native World Builder node schema.",
+        ],
+    }
+
+
+def _quaternion_yaw(yaw_deg: float) -> dict[str, float]:
+    half = math.radians(float(yaw_deg)) / 2.0
+    return {"i": 0.0, "j": 0.0, "k": math.sin(half), "r": math.cos(half)}
+
+
+def apply_architecture_to_world_plan(plan: dict[str, Any], assembly: dict[str, Any]) -> dict[str, Any]:
+    building_id = str(plan.get("building_id") or (plan.get("building") or {}).get("id") or "building")
+    building = next((b for b in assembly.get("buildings", []) if b.get("id") == building_id), None)
+    if building is None:
+        raise ValueError(f"assembly contains no building {building_id!r}")
+    out = dict(plan)
+    out["nodes"] = list(plan.get("nodes") or [])
+    existing_refs = {str(n.get("nodeRef")) for n in out["nodes"] if isinstance(n, dict)}
+    added = 0
+    skipped = 0
+    for p in building.get("placements", []):
+        resource = p.get("resource")
+        if not resource:
+            skipped += 1
+            continue
+        name = str(p["id"])
+        ref = f"$/#{building_id}_{name}"
+        if ref in existing_refs:
+            continue
+        existing_refs.add(ref)
+        out["nodes"].append({
+            "name": name,
+            "type": "worldMeshNode",
+            "floor": int(p.get("floor", 0)),
+            "nodeRef": ref,
+            "position": dict(p["position"]),
+            "rotation": _quaternion_yaw(float(p.get("rotation_deg", 0.0))),
+            "rotation_deg": float(p.get("rotation_deg", 0.0)),
+            "scale": dict(p.get("scale") or {"x": 1.0, "y": 1.0, "z": 1.0}),
+            "primaryRange": 80.0,
+            "secondaryRange": 120.0,
+            "uk10": 32,
+            "uk11": 512,
+            "streamingRefPoint": dict(p["position"]),
+            "data": {
+                "logicalType": "architecture_piece",
+                "architectureClass": p.get("class"),
+                "semantic": p.get("semantic"),
+                "resource": resource,
+                "resourceFamily": p.get("family"),
+                "roomId": p.get("room_id"),
+                "target": p.get("target"),
+                "selection": p.get("selection"),
+                "dimensionHints": p.get("dimension_hints"),
+                "requiresBoundsValidation": True,
+                "scalePolicy": "no_automatic_mesh_scaling",
+            },
+        })
+        added += 1
+    out["architecture"] = {
+        "format": FORMAT,
+        "building_id": building_id,
+        "added_node_count": added,
+        "skipped_unresolved_count": skipped,
+        "note": "Architecture nodes use real harvested resource paths but still require a real worldMeshNode template for native Object Spawner export.",
+    }
+    return outdef build_architecture_assembly(layouts: list[Layout], catalog: dict[str, Any]) -> dict[str, Any]:
+    buildings: list[dict[str, Any]] = []
+    for layout in layouts:
+        all_placements: list[dict[str, Any]] = []
+        family, family_info = choose_architecture_family(catalog, str(layout.building.type))
+        class_families, class_family_info = choose_class_families(catalog, family, str(layout.building.type))
+        for room in layout.rooms:
+            all_placements.extend(assemble_room(layout, room, catalog, family, class_families))
         by_class = defaultdict(int)
         unresolved = []
         for p in all_placements:

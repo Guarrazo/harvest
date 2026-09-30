@@ -59,19 +59,19 @@ def generate_floor_rooms(
     rng: random.Random,
     template_name: str,
 ) -> list[Room]:
-    # Keep the generated structural grid flush with the building footprint.
-    # Shrinking individual bays creates gaps that make walls, doors and floors detach
-    # from each other. Room kinds can still vary without changing the structural grid.
-    margin = 0.0
+    margin = 0.5
     corridor = 1.6
     usable_w = anchor.width_m - 2 * margin
     usable_d = anchor.depth_m - 2 * margin
     if usable_w < 4.0 or usable_d < 4.0:
         raise ValueError(f"building {anchor.id}: footprint too small")
 
+    # The generator uses a deterministic corridor-and-bays layout.
+    # This is deliberately conservative: connectivity is more valuable than maximal packing.
     rooms: list[Room] = []
     rules = TEMPLATES[ALIASES.get(template_name, template_name)]
 
+    # For narrow buildings, make one side of rooms; for wider buildings, use both sides.
     double_sided = usable_d >= 9.0
     side_depth = (usable_d - corridor) / 2 if double_sided else usable_d
     rows = max(1, int(round(usable_w / 3.6)))
@@ -82,27 +82,29 @@ def generate_floor_rooms(
     room_counter = 0
     for i in range(target_rows):
         x = -anchor.width_m / 2 + margin + i * bay_width
-        w = bay_width
+        w = bay_width - 0.18
         for side in ([-1, 1] if double_sided else [1]):
             y = side * corridor / 2
             if double_sided:
                 y0 = y if side > 0 else -corridor / 2 - side_depth
             else:
                 y0 = -anchor.depth_m / 2 + margin
-            d = side_depth
+            d = side_depth - 0.18
             if w < 1.4 or d < 1.4:
                 continue
             rule = weighted_rule(rng, rules, banned_once if room_counter < 4 else set())
             if room_counter < 1:
                 rule = next((r for r in rules if r.kind in {"shopfloor", "living", "open_office", "workshop"}), rule)
+            room_w = min(w, rng.uniform(rule.min_w, rule.max_w))
+            room_d = min(d, rng.uniform(rule.min_d, rule.max_d))
             room = Room(
                 id=f"{anchor.id}_F{floor+1}_R{room_counter+1:02d}",
                 kind=rule.kind,
                 floor=floor,
-                x=x,
-                y=y0,
-                width=w,
-                depth=d,
+                x=x + (w - room_w) / 2,
+                y=y0 + (d - room_d) / 2,
+                width=room_w,
+                depth=room_d,
             )
             rooms.append(room)
             banned_once.add(rule.kind)

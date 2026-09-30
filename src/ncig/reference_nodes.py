@@ -272,7 +272,7 @@ def collision_node(
                 },
                 "Shapes": [{
                     "ShapeType": "Box",
-                    "Rotation": copy.deepcopy(q),
+                    "Rotation": {"$type": "Quaternion", **copy.deepcopy(q)},
                     "Size": {"$type": "Vector3", "X": float(size["x"]), "Y": float(size["y"]), "Z": float(size["z"])},
                     "Preset": cname(preset),
                     "ProxyType": "CharacterObstacle",

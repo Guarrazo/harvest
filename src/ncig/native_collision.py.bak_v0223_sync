@@ -77,14 +77,8 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
             continue
         min_x = min(float(r.get("x", 0.0)) for r in floor_rooms)
         max_x = max(float(r.get("x", 0.0)) + float(r.get("width", 0.0)) for r in floor_rooms)
-        building_width = float(building.get("width_m", 0.0))
-        building_depth = float(building.get("depth_m", 0.0))
-        if building_width > 0.0 and building_depth > 0.0:
-            min_x, max_x = -building_width * 0.5, building_width * 0.5
-            min_y, max_y = -building_depth * 0.5, building_depth * 0.5
-        else:
-            min_y = min(float(r.get("y", 0.0)) for r in floor_rooms)
-            max_y = max(float(r.get("y", 0.0)) + float(r.get("depth", 0.0)) for r in floor_rooms)
+        min_y = min(float(r.get("y", 0.0)) for r in floor_rooms)
+        max_y = max(float(r.get("y", 0.0)) + float(r.get("depth", 0.0)) for r in floor_rooms)
         w = max(0.1, max_x - min_x)
         d = max(0.1, max_y - min_y)
         center = _world(

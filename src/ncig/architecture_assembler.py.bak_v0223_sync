@@ -246,12 +246,7 @@ def _tile_axis(total: float, piece: float | None) -> list[tuple[float, float, fl
     return [(actual * (i + 0.5), actual, scale) for i in range(count)]
 
 
-def _floor_bounds(rooms: list[Room], building: Any | None = None) -> tuple[float, float, float, float]:
-    if building is not None:
-        width = float(getattr(building, "width_m", 0.0))
-        depth = float(getattr(building, "depth_m", 0.0))
-        if width > 0.0 and depth > 0.0:
-            return (-width * 0.5, width * 0.5, -depth * 0.5, depth * 0.5)
+def _floor_bounds(rooms: list[Room]) -> tuple[float, float, float, float]:
     return (
         min(r.x for r in rooms),
         max(r.x + r.width for r in rooms),
@@ -263,7 +258,7 @@ def _floor_bounds(rooms: list[Room], building: Any | None = None) -> tuple[float
 def _floor_surface(layout: Layout, floor_rooms: list[Room], catalog: dict[str, Any], placements: list[dict[str, Any]], family: str | None) -> None:
     if not floor_rooms:
         return
-    min_x, max_x, min_y, max_y = _floor_bounds(floor_rooms, layout.building)
+    min_x, max_x, min_y, max_y = _floor_bounds(floor_rooms)
     width, depth = max_x - min_x, max_y - min_y
     floor = floor_rooms[0].floor
     item, info = _best_item(_items(catalog, "floor_piece", family, layout.building.type),
@@ -425,7 +420,7 @@ def _window(layout: Layout, room: Room, catalog: dict[str, Any], placements: lis
 def _ceiling_surface(layout: Layout, floor_rooms: list[Room], catalog: dict[str, Any], placements: list[dict[str, Any]], family: str | None) -> None:
     if not floor_rooms:
         return
-    min_x, max_x, min_y, max_y = _floor_bounds(floor_rooms, layout.building)
+    min_x, max_x, min_y, max_y = _floor_bounds(floor_rooms)
     width, depth = max_x - min_x, max_y - min_y
     floor = floor_rooms[0].floor
     item, info = _best_item(
@@ -486,34 +481,6 @@ def _ceiling_surface(layout: Layout, floor_rooms: list[Room], catalog: dict[str,
                 scale=fit,
                 target_bbox_center=bbox_center,
             ))
-
-
-def assemble_room(layout: Layout, room: Room, catalog: dict[str, Any], family: str | None,
-                  class_families: dict[str, str] | None = None) -> list[dict[str, Any]]:
-    """Assemble room shell/details; floor and ceiling are generated once per floor."""
-    placements: list[dict[str, Any]] = []
-    fm = class_families or {}
-    door_gap, _ = _door_and_frame(
-        layout, room, catalog, placements,
-        fm.get("door_frame", family), fm.get("door_piece", family),
-    )
-    wall_family = fm.get("wall_piece", family)
-    if room.y >= 0:
-        _wall_run(layout, room, catalog, placements, side="south", x0=room.x, y0=room.y + room.depth,
-                  length=room.width, rotation_deg=0.0, family=wall_family)
-        _wall_run(layout, room, catalog, placements, side="north", x0=room.x, y0=room.y,
-                  length=room.width, rotation_deg=0.0, opening=door_gap, family=wall_family)
-    else:
-        _wall_run(layout, room, catalog, placements, side="north", x0=room.x, y0=room.y,
-                  length=room.width, rotation_deg=0.0, family=wall_family)
-        _wall_run(layout, room, catalog, placements, side="south", x0=room.x, y0=room.y + room.depth,
-                  length=room.width, rotation_deg=0.0, opening=door_gap, family=wall_family)
-    _wall_run(layout, room, catalog, placements, side="west", x0=room.x, y0=room.y,
-              length=room.depth, rotation_deg=90.0, family=wall_family)
-    _wall_run(layout, room, catalog, placements, side="east", x0=room.x + room.width, y0=room.y,
-              length=room.depth, rotation_deg=90.0, family=wall_family)
-    _window(layout, room, catalog, placements, fm.get("window_piece", family))
-    return placements
 
 
 def build_architecture_assembly(layouts: list[Layout], catalog: dict[str, Any]) -> dict[str, Any]:

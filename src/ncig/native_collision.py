@@ -163,9 +163,9 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
         gap = min(DOOR_GAP, w * 0.40 if w > 0 else DOOR_GAP)
         opening = (w / 2 - gap / 2, w / 2 + gap / 2)
         # The visual generator puts the room door on the corridor-facing wall:
-        # positive-Y rooms use north; negative-Y rooms use south. The old collision
-        # code inverted this and opened the exterior wall instead.
-        opening_side = "south" if ry >= 0 else "north"
+        # positive-Y rooms use north (lower local-Y edge); negative-Y rooms use south
+        # (upper local-Y edge). Exterior entry openings are tracked separately.
+        opening_side = "north" if ry >= 0 else "south"
         entry_opening: tuple[float, float] | None = None
         entry_side: str | None = None
         if floor == 0 and building.get("entry_local_x") is not None and building.get("entry_local_y") is not None:

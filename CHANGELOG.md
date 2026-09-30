@@ -1,3 +1,7 @@
+## v0.22.2
+
+- Report the continuous per-floor collision policy accurately in native composition metadata.
+
 ## v0.22.1
 
 - Restore the runtime-aware ceiling surface function required by the 0.22.x architecture pipeline.

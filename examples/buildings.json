@@ -1,0 +1,48 @@
+{
+  "buildings": [
+    {
+      "id": "demo_megabuilding_001",
+      "district": "watson",
+      "type": "residential",
+      "position": {"x": -1200.0, "y": 860.0, "z": 15.0},
+      "yaw_deg": 35.0,
+      "width_m": 18.0,
+      "depth_m": 15.0,
+      "floors": 4,
+      "tags": ["demo", "residential", "vertical"]
+    },
+    {
+      "id": "demo_shop_001",
+      "district": "kabuki",
+      "type": "commercial",
+      "position": {"x": -1030.0, "y": 640.0, "z": 12.0},
+      "yaw_deg": 90.0,
+      "width_m": 11.0,
+      "depth_m": 9.0,
+      "floors": 1,
+      "tags": ["demo", "shop"]
+    },
+    {
+      "id": "demo_office_001",
+      "district": "corpo_plaza",
+      "type": "office",
+      "position": {"x": 250.0, "y": -320.0, "z": 20.0},
+      "yaw_deg": -15.0,
+      "width_m": 24.0,
+      "depth_m": 18.0,
+      "floors": 2,
+      "tags": ["demo", "office"]
+    },
+    {
+      "id": "demo_factory_001",
+      "district": "santo_domingo",
+      "type": "industrial",
+      "position": {"x": 850.0, "y": -120.0, "z": 0.0},
+      "yaw_deg": 180.0,
+      "width_m": 30.0,
+      "depth_m": 20.0,
+      "floors": 1,
+      "tags": ["demo", "industrial"]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "observations": [
+    {
+      "name": "door_watson_001",
+      "nodeType": "worldEntityNode",
+      "nodeInstance": "door_residential_small",
+      "sectorPath": "base/worlds/03_night_city/_compiled/default/exterior_0_0_0_0.streamingsector",
+      "nodeRef": "$/#door_watson_001",
+      "position": {"x": -1200.0, "y": 860.0, "z": 15.0},
+      "yaw": 35.0,
+      "tags": ["door", "watson"]
+    },
+    {
+      "name": "shopfront_kabuki_001",
+      "nodeType": "worldEntityNode",
+      "nodeInstance": "door_shop_glass",
+      "sectorPath": "base/worlds/03_night_city/_compiled/default/exterior_0_0_0_1.streamingsector",
+      "nodeRef": "$/#shopfront_kabuki_001",
+      "position": {"x": -1030.0, "y": 640.0, "z": 12.0},
+      "yaw": 90.0,
+      "tags": ["entry", "shop"]
+    }
+  ]
+}

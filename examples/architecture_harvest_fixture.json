@@ -1,0 +1,18 @@
+{
+  "format": "ncig-harvest-v1",
+  "root": "F:\\Games\\CP2077\\Cyberpunk 2077\\bin\\x64\\plugins\\cyber_engine_tweaks\\mods\\entSpawner",
+  "resource_count": 11,
+  "resources": {
+    "base\\environment\\architecture\\common\\int\\int_common_a\\int_common_a_floor_glass_l200_w200_a.mesh": {"roles": ["floor", "geometry", "mesh"], "sources": ["data/spawnables/mesh/all/paths_mesh.txt"]},
+    "base\\environment\\architecture\\common\\buildings\\steinbeck\\interior\\steinbeck_building_set_b_int_ceiling_uf_solid_w600_l600_vt.mesh": {"roles": ["ceiling", "geometry", "mesh"], "sources": ["data/spawnables/mesh/all/paths_mesh.txt"]},
+    "base\\environment\\architecture\\city_center\\arasaka_tower\\interior\\int_arasaka_tower_lobby_a_wall_a_h800_l600.mesh": {"roles": ["geometry", "mesh", "wall"], "sources": ["data/spawnables/mesh/all/paths_mesh.txt"]},
+    "base\\environment\\architecture\\common\\int\\int_ent_corridor_a\\int_ent_corridor_a_doorframe_a_aa.mesh": {"roles": ["door", "geometry", "mesh"], "sources": ["data/spawnables/mesh/all/paths_mesh.txt"]},
+    "base\\environment\\architecture\\common\\int\\int_ent_apartment_a\\int_ent_apartment_a_bathroom_wall_w300_b_hole.mesh": {"roles": ["bathroom", "geometry", "mesh", "wall"], "sources": ["data/spawnables/mesh/all/paths_mesh.txt"]},
+    "base\\environment\\architecture\\city_center\\arasaka_tower\\interior\\lobby\\int_arasaka_tower_lobby_a_wall_a_l600_window_a.mesh": {"roles": ["geometry", "mesh", "wall"], "sources": ["data/spawnables/mesh/all/paths_mesh.txt"]},
+    "base\\environment\\architecture\\city_center\\arasaka_tower\\interior\\lobby\\int_arasaka_tower_lobby_column_a_h800_l100_w200.mesh": {"roles": ["geometry", "mesh"], "sources": ["data/spawnables/mesh/all/paths_mesh.txt"]},
+    "base\\environment\\architecture\\city_center\\arasaka_tower\\interior\\lobby\\int_arasaka_tower_lobby_a_stairs_a_l300_w300.mesh": {"roles": ["geometry", "mesh"], "sources": ["data/spawnables/mesh/all/paths_mesh.txt"]},
+    "base\\environment\\architecture\\city_center\\arasaka_tower\\interior\\lobby\\int_arasaka_tower_lobby_a_railing_c_h100_l150_a.mesh": {"roles": ["geometry", "mesh"], "sources": ["data/spawnables/mesh/all/paths_mesh.txt"]},
+    "base\\environment\\architecture\\city_center\\arasaka_tower\\interior\\lobby\\int_arasaka_tower_lobby_a_wall_glass_addon_a_no_holes.mesh": {"roles": ["geometry", "mesh", "wall"], "sources": ["data/spawnables/mesh/all/paths_mesh.txt"]},
+    "base\\characters\\common\\base_bodies\\animals\\swallow\\swallow_body.mesh": {"roles": ["geometry", "mesh", "wall"], "sources": ["data/spawnables/mesh/all/paths_mesh.txt"]}
+  }
+}

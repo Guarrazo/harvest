@@ -313,7 +313,7 @@ def _floor_surface(layout: Layout, floor_rooms: list[Room], catalog: dict[str, A
 def _wall_run(layout: Layout, room: Room, catalog: dict[str, Any], placements: list[dict[str, Any]], *,
               side: str, x0: float, y0: float, length: float, rotation_deg: float,
               opening: tuple[float, float] | None = None, family: str | None = None) -> None:
-    candidates = _items(catalog, "wall_piece", family, layout.building.type)
+    candidates = _style_safe_items(_items(catalog, "wall_piece", family, layout.building.type), "wall_piece")
     item, info = _best_item(candidates, target_length=min(length, 3.0), target_height=3.0)
     if item is None:
         return
@@ -368,8 +368,8 @@ def _wall_run(layout: Layout, room: Room, catalog: dict[str, Any], placements: l
             ))
 
 
-def _door_and_frame(layout: Layout, room: Room, catalog: dict[str, Any], placements: list[dict[str, Any]], frame_family: str | None, door_family: str | None) -> tuple[tuple[float, float], str]:
-    gap = min(DEFAULT_DOOR_WIDTH, room.width * 0.32)
+def _door_and_frame(layout: Layout, room: Room, catalog: dict[str, Any], placements: list[dict[str, Any]], frame_family: str | None, door_family: str | None, wall_family: str | None = None) -> tuple[tuple[float, float], str]:
+    gap = min(DEFAULT_DOOR_WIDTH, room.width * 0.40)
     room_center_x = room.x + room.width / 2.0
     if room.y >= 0:
         y, side, rotation = room.y, "south", 0.0
@@ -377,26 +377,30 @@ def _door_and_frame(layout: Layout, room: Room, catalog: dict[str, Any], placeme
         y, side, rotation = room.y + room.depth, "north", 180.0
     center = room_center_x - room.x
     opening = (center - gap / 2.0, center + gap / 2.0)
-    frame, finfo = _best_item(_items(catalog, "door_frame", frame_family, layout.building.type), target_length=gap, target_height=2.1)
-    door, dinfo = _best_item(_items(catalog, "door_piece", door_family, layout.building.type), target_length=gap, target_height=2.1)
+    frame_family = wall_family or frame_family
+    door_family = wall_family or door_family
+    frame_items = _style_safe_items(_items(catalog, "door_frame", frame_family, layout.building.type), "door_frame")
+    door_items = _style_safe_items(_items(catalog, "door_piece", door_family, layout.building.type), "door_piece")
+    frame, finfo = _best_item(frame_items, target_length=gap, target_height=DEFAULT_DOOR_HEIGHT)
+    door, dinfo = _best_item(door_items, target_length=gap, target_height=DEFAULT_DOOR_HEIGHT)
     for suffix, cls, item, info in (("frame", "door_frame", frame, finfo), ("door", "door_piece", door, dinfo)):
         if item is None:
             continue
         runtime_mesh = isinstance(item.get("bounds"), dict)
         if runtime_mesh:
-            fit_info = linear_fit(item, span=gap, height=2.1, desired_rotation_deg=rotation)
+            fit_info = linear_fit(item, span=gap, height=DEFAULT_DOOR_HEIGHT, desired_rotation_deg=rotation)
             fit = (fit_info or {}).get("scale") or {"x": 1.0, "y": 1.0, "z": 1.0}
             actual_rotation = float((fit_info or {}).get("rotation_deg", rotation))
-            bbox_center = (room_center_x, y, room.floor * FLOOR_HEIGHT + 1.05)
+            bbox_center = (room_center_x, y, room.floor * FLOOR_HEIGHT + DEFAULT_DOOR_HEIGHT * 0.5)
         else:
-            fit = _fit_scale(item, {"span": gap, "height": 2.1}, cls)
+            fit = _fit_scale(item, {"span": gap, "height": DEFAULT_DOOR_HEIGHT}, cls)
             actual_rotation, bbox_center = rotation, None
         placements.append(_placement(
             layout, room, item,
             element_id=f"{room.id}_ARCH_{suffix}",
             local_x=room_center_x, local_y=y, local_z=0.0,
             rotation_deg=actual_rotation, semantic=cls,
-            target={"opening_width_m": gap, "wall_side": side, "fit_scale": fit,
+            target={"opening_width_m": gap, "opening_height_m": DEFAULT_DOOR_HEIGHT, "wall_side": side, "fit_scale": fit,
                     "runtime_span_axis": (fit_info or {}).get("span_axis") if runtime_mesh else None},
             info=info, scale=fit, target_bbox_center=bbox_center,
         ))
@@ -404,7 +408,7 @@ def _door_and_frame(layout: Layout, room: Room, catalog: dict[str, Any], placeme
 
 
 def _window(layout: Layout, room: Room, catalog: dict[str, Any], placements: list[dict[str, Any]], family: str | None) -> None:
-    windows = _items(catalog, "window_piece", family, layout.building.type)
+    windows = _style_safe_items(_items(catalog, "window_piece", family, layout.building.type), "window_piece")
     if not windows or room.width < 2.8:
         return
     item, info = _best_item(windows, target_length=min(room.width, 2.0), target_height=1.4)
@@ -506,9 +510,10 @@ def assemble_room(layout: Layout, room: Room, catalog: dict[str, Any], family: s
     """Assemble room shell/details; floor and ceiling are generated once per floor."""
     placements: list[dict[str, Any]] = []
     fm = class_families or {}
+    wall_family = fm.get("wall_piece", family)
     door_gap, _ = _door_and_frame(
         layout, room, catalog, placements,
-        fm.get("door_frame", family), fm.get("door_piece", family),
+        fm.get("door_frame", family), fm.get("door_piece", family), wall_family,
     )
     wall_family = fm.get("wall_piece", family)
     if room.y >= 0:

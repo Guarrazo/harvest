@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import hashlib
 from collections import defaultdict
 from typing import Any
 
@@ -44,14 +45,14 @@ _STYLE_EXCLUDE = {
 }
 
 _DISTRICT_STYLE_TOKENS = {
-    "watson": ("common", "nkt", "kts", "tech"),
-    "westbrook": ("common", "nkt", "jp", "arasaka"),
-    "heywood": ("common", "ent", "apartment", "urban"),
-    "santo_domingo": ("common", "ent", "industrial", "mlt"),
-    "pacifica": ("common", "coast", "mall", "ent"),
-    "city_center": ("common", "arasaka", "office", "corporate"),
-    "dogtown": ("common", "dog", "industrial", "ent"),
-    "badlands": ("common", "industrial", "warehouse"),
+    "watson": ("nkt", "kts", "tech"),
+    "westbrook": ("nkt", "jp", "arasaka"),
+    "heywood": ("ent", "apartment", "urban"),
+    "santo_domingo": ("ent", "industrial", "mlt"),
+    "pacifica": ("coast", "mall", "ent"),
+    "city_center": ("arasaka", "office", "corporate"),
+    "dogtown": ("dog", "industrial", "ent"),
+    "badlands": ("industrial", "warehouse"),
 }
 
 
@@ -192,7 +193,7 @@ def _entry_door_and_frame(
     return opening, side
 
 
-def choose_architecture_family(catalog: dict[str, Any], building_type: str, district: str | None = None) -> tuple[str | None, dict[str, Any]]:
+def choose_architecture_family(catalog: dict[str, Any], building_type: str, district: str | None = None, variation_key: str | None = None) -> tuple[str | None, dict[str, Any]]:
     """Pick one architectural kit family for a whole building, rather than one unrelated family per piece."""
     items = [x for x in catalog.get("items", []) if isinstance(x, dict) and x.get("class")]
     by_family: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -214,11 +215,13 @@ def choose_architecture_family(catalog: dict[str, Any], building_type: str, dist
         complete = sum(1 for x in family_items if bool((x.get("dimensions") or {}).get("complete")))
         score_mean = sum(float(x.get("score", 0)) for x in family_items) / max(1, len(family_items))
         style_hits = sum(1 for token in tokens if token in family.lower())
+        district_tokens = _DISTRICT_STYLE_TOKENS.get(str(district or "").lower(), ())
+        district_hits = sum(1 for token in district_tokens if token in family.lower())
         sane_core = sum(1 for x in family_items if str(x.get("class")) in core and sane_dimensions(x, str(x.get("class"))))
         # Core coverage and sane dimensions dominate. A family that has only a token
         # match but no usable floor/wall/ceiling is not a valid building kit.
         total = core_cov * 850 + sane_core * 180 + sec_cov * 70 + min(20, complete) * 8 + score_mean
-        total += style_hits * 80
+        total += style_hits * 80 + district_hits * 240
         info = {
             "family": family,
             "core_coverage": core_cov,
@@ -226,6 +229,7 @@ def choose_architecture_family(catalog: dict[str, Any], building_type: str, dist
             "secondary_coverage": sec_cov,
             "complete_dimension_items": complete,
             "style_hits": style_hits,
+            "district_hits": district_hits,
             "family_item_count": len(family_items),
             "style_tokens": tokens,
         }
@@ -233,8 +237,23 @@ def choose_architecture_family(catalog: dict[str, Any], building_type: str, dist
     if not candidates:
         return None, {"family": None, "reason": "no_family_with_structural_coverage"}
     candidates.sort(key=lambda row: (-row[0], row[1]))
-    _, family, info = candidates[0]
-    info["selection_score"] = round(candidates[0][0], 3)
+    best_score = candidates[0][0]
+    best_core = candidates[0][2]["core_coverage"]
+    best_sane = candidates[0][2]["sane_core_coverage"]
+    # Keep variety only among genuinely comparable kits. The variation key is stable,
+    # so the same building always regenerates the same architectural choice.
+    pool = [
+        row for row in candidates
+        if row[2]["core_coverage"] == best_core
+        and row[2]["sane_core_coverage"] == best_sane
+        and row[0] >= best_score * 0.88
+    ] or [candidates[0]]
+    key = str(variation_key or "") or (str(district or "") + "|" + str(building_type))
+    digest = int(hashlib.sha256(key.encode("utf-8")).hexdigest()[:8], 16)
+    chosen = pool[digest % len(pool)]
+    _, family, info = chosen
+    info["selection_score"] = round(chosen[0], 3)
+    info["variation_pool_size"] = len(pool)
     return family, info
 
 
@@ -901,7 +920,7 @@ def build_architecture_assembly(layouts: list[Layout], catalog: dict[str, Any]) 
     buildings: list[dict[str, Any]] = []
     for layout in layouts:
         all_placements: list[dict[str, Any]] = []
-        family, family_info = choose_architecture_family(catalog, str(layout.building.type), str(layout.building.district))
+        family, family_info = choose_architecture_family(catalog, str(layout.building.type), str(layout.building.district), str(layout.building.id))
         class_families, class_family_info = choose_class_families(catalog, family, str(layout.building.type), str(layout.building.district))
         floors = sorted({int(r.floor) for r in layout.rooms})
         for floor in floors:

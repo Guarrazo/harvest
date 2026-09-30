@@ -505,8 +505,20 @@ def _ceiling_surface(layout: Layout, floor_rooms: list[Room], catalog: dict[str,
             ))
 
 
+def _has_neighbor(room: Room, floor_rooms: list[Room], side: str, eps: float = 0.05) -> bool:
+    for other in floor_rooms:
+        if other.id == room.id or other.floor != room.floor:
+            continue
+        overlap_y = min(room.y + room.depth, other.y + other.depth) - max(room.y, other.y)
+        if side == "west" and abs(room.x - (other.x + other.width)) <= eps and overlap_y > eps:
+            return True
+        if side == "east" and abs((room.x + room.width) - other.x) <= eps and overlap_y > eps:
+            return True
+    return False
+
+
 def assemble_room(layout: Layout, room: Room, catalog: dict[str, Any], family: str | None,
-                  class_families: dict[str, str] | None = None) -> list[dict[str, Any]]:
+                  class_families: dict[str, str] | None = None,\n                  floor_rooms: list[Room] | None = None) -> list[dict[str, Any]]:
     """Assemble room shell/details; floor and ceiling are generated once per floor."""
     placements: list[dict[str, Any]] = []
     fm = class_families or {}
@@ -515,7 +527,6 @@ def assemble_room(layout: Layout, room: Room, catalog: dict[str, Any], family: s
         layout, room, catalog, placements,
         fm.get("door_frame", family), fm.get("door_piece", family), wall_family,
     )
-    wall_family = fm.get("wall_piece", family)
     if room.y >= 0:
         _wall_run(layout, room, catalog, placements, side="south", x0=room.x, y0=room.y + room.depth,
                   length=room.width, rotation_deg=0.0, family=wall_family)
@@ -526,8 +537,10 @@ def assemble_room(layout: Layout, room: Room, catalog: dict[str, Any], family: s
                   length=room.width, rotation_deg=0.0, family=wall_family)
         _wall_run(layout, room, catalog, placements, side="south", x0=room.x, y0=room.y + room.depth,
                   length=room.width, rotation_deg=0.0, opening=door_gap, family=wall_family)
-    _wall_run(layout, room, catalog, placements, side="west", x0=room.x, y0=room.y,
-              length=room.depth, rotation_deg=90.0, family=wall_family)
+    peers = floor_rooms or [room]
+    if not _has_neighbor(room, peers, "west"):
+        _wall_run(layout, room, catalog, placements, side="west", x0=room.x, y0=room.y,
+                  length=room.depth, rotation_deg=90.0, family=wall_family)
     _wall_run(layout, room, catalog, placements, side="east", x0=room.x + room.width, y0=room.y,
               length=room.depth, rotation_deg=90.0, family=wall_family)
     _window(layout, room, catalog, placements, fm.get("window_piece", family))
@@ -546,7 +559,7 @@ def build_architecture_assembly(layouts: list[Layout], catalog: dict[str, Any]) 
             _floor_surface(layout, floor_rooms, catalog, all_placements, class_families.get("floor_piece", family))
             _ceiling_surface(layout, floor_rooms, catalog, all_placements, class_families.get("ceiling_piece", family))
             for room in floor_rooms:
-                all_placements.extend(assemble_room(layout, room, catalog, family, class_families))
+                all_placements.extend(assemble_room(layout, room, catalog, family, class_families, floor_rooms))
         by_class = defaultdict(int)
         unresolved = []
         for p in all_placements:

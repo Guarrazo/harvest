@@ -32,7 +32,10 @@ if errorlevel 1 exit /b %ERRORLEVEL%
 if errorlevel 1 exit /b %ERRORLEVEL%
 "%PYTHONEXE%" -m ncig.cli generate --input build\auto_buildings.json --out build\generated_auto
 if errorlevel 1 exit /b %ERRORLEVEL%
-"%PYTHONEXE%" -m ncig.cli architecture-assemble --layouts build\generated_auto\layouts.json --catalog build\real_architecture_remote\architecture_catalog.json --out build\real_architecture_remote\architecture_assembly_auto.json
+set "CATALOG=build\real_architecture_remote\architecture_catalog_bounded.json"
+if not exist "%CATALOG%" set "CATALOG=build\real_architecture_remote\architecture_catalog.json"
+echo NCIG: architecture catalog for detected buildings: %CATALOG%
+"%PYTHONEXE%" -m ncig.cli architecture-assemble --layouts build\generated_auto\layouts.json --catalog "%CATALOG%" --out build\real_architecture_remote\architecture_assembly_auto.json
 if errorlevel 1 exit /b %ERRORLEVEL%
 echo NCIG automatic target pipeline completed.
 echo Candidates: build\auto_building_candidates.json

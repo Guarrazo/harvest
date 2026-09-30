@@ -1,4 +1,4 @@
-# NCIG v0.22.6
+# NCIG v0.22.7
 
 
 Esta iteración corrige un problema físico importante detectado en la prueba de `demo_shop_001`: los nombres de meshes CP77 usan `w/l/h` con semánticas distintas según la clase. Los muros y puertas ya no interpretan un `_w300` como 30 cm de tramo.
@@ -120,22 +120,25 @@ Use `--max-per-class` to change the number of candidates retained per structural
 
 ### Detectar edificios vacíos automáticamente
 
-Exporta desde la herramienta de edición de mundo los `.streamingsector` del área que quieras analizar y colócalos, por ejemplo, en `C:\CyberpunkExports\sectors`.
-
-Después ejecuta:
+Para una exportación grande de `.streamingsector` —por ejemplo, toda la carpeta `default` de Night City convertida a JSON— usa el pipeline de ciudad:
 
 ```powershell
 .\tools\prepare_detected_buildings_remote.cmd https://github.com/Guarrazo/harvest C:\CyberpunkExports\sectors 10
 ```
 
+La versión de ciudad usa un índice espacial en XY para no comparar cada puerta contra todos los nodos del mundo. También acepta tanto el envoltorio JSON de World Builder/Object Spawner como un `streamingsector` exportado directamente.
+
+Antes de generar, guarda automáticamente `build\world_manifest.json`, que resume archivos JSON válidos/erróneos, sectores, tipos de nodo, clases detectadas, distritos inferidos y límites del mundo.
+
 El pipeline genera:
 
-- `build\auto_building_candidates.json`: todos los candidatos con evidencia y puntuación.
-- `build\auto_buildings.json`: solo candidatos suficientemente respaldados para generar.
+- `build\auto_building_candidates.json`: candidatos con evidencia, geometría y estado `fill/review`.
+- `build\world_manifest.json`: inventario local de la exportación.
+- `build\auto_buildings.json`: candidatos suficientemente respaldados para generar.
 - `build\generated_auto\layouts.json`: interiores calculados desde el footprint detectado.
 - `build\real_architecture_remote\architecture_assembly_auto.json`: ensamblaje con assets reales.
 
-La detección todavía necesita un export del mundo. No se añaden datos del mapa del juego al repositorio; el objetivo es que, dado el export, la detección, clasificación, cálculo y generación sean automáticos.
+Los datos extraídos del juego siguen siendo de trabajo local y no deben añadirse al repositorio. La exportación se realiza una vez; después NCIG puede repetir detección, clasificación y generación sin volver a WolvenKit.
 ### Match scanned entries to generated anchors
 
 ```powershell

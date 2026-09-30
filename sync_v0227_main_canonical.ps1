@@ -16,6 +16,7 @@ $files = @(
   'CHANGELOG.md',
   'README.md',
   'docs/V0.22.6_REAL_BUILDING_PIPELINE.md',
+  'docs/V0.22.7_CITY_SCALE.md',
   'tools/prepare_detected_buildings_remote.cmd',
   'tests/test_v0227_city_pipeline.py',
   'tests/test_v021_geometry.py',

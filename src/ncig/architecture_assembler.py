@@ -37,6 +37,8 @@ def _style_safe_items(items: list[dict[str, Any]], cls: str) -> list[dict[str, A
     safe = [item for item in items if not any(token in (str(item.get("path", "")) + " " + str(item.get("family", ""))).lower() for token in banned)]
     return safe or items
 def _items(catalog: dict[str, Any], cls: str, family: str | None = None, building_type: str | None = None) -> list[dict[str, Any]]:
+    tokens = _style_tokens(building_type or "mixed")
+    return compatible_family_candidates(catalog, cls, family, building_tokens=tokens)
 
 
 def _needs_backface(item: dict[str, Any]) -> bool:
@@ -141,9 +143,6 @@ def _entry_door_and_frame(
             info=info, scale=fit, target_bbox_center=bbox_center,
         ))
     return opening, side
-
-    tokens = _style_tokens(building_type or "mixed")
-    return compatible_family_candidates(catalog, cls, family, building_tokens=tokens)
 
 
 def _style_tokens(building_type: str) -> tuple[str, ...]:

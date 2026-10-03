@@ -18,7 +18,6 @@ $files = @(
   'README.md',
   'docs/V0.22.6_REAL_BUILDING_PIPELINE.md',
   'docs/V0.22.7_CITY_SCALE.md',
-  'docs/V0.22.7_CITY_SCALE.md',
   'tools/prepare_detected_buildings_remote.cmd',
   'tests/test_v0227_city_pipeline.py',
   'tests/test_v0228_city_index.py',
@@ -26,7 +25,7 @@ $files = @(
   'tests/test_v021_collision_and_composition.py',
   'tests/test_v0225_entry_and_collision.py'
 )
-$stage = Join-Path $Root '.ncig_v0227_sync'
+$stage = Join-Path $Root '.ncig_v0228_sync'
 if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
 New-Item -ItemType Directory -Path $stage | Out-Null
 foreach ($rel in $files) {
@@ -41,11 +40,11 @@ $checks = @(
   @('src/ncig/city_pipeline.py','def detect_city_buildings'),
   @('src/ncig/city_pipeline.py','class SpatialIndex'),
   @('src/ncig/cli.py','detect-city-buildings'),
-  @('src/ncig/__init__.py','__version__ = "0.22.7"'),
-  @('pyproject.toml','version = "0.22.7"'),
-  @('src/ncig/cli.py','"generator_version": "0.22.7"'),
+  @('src/ncig/__init__.py','__version__ = "0.22.8"'),
+  @('pyproject.toml','version = "0.22.8"'),
+  @('src/ncig/cli.py','"generator_version": "0.22.8"'),
   @('tools/prepare_detected_buildings_remote.cmd','detect-city-buildings'),
-  @('tests/test_v0227_city_pipeline.py','test_loader_accepts_direct_single_sector_with_node_data')
+  @('tests/test_v0228_city_index.py','test_inspector_reports_wolvenkit_data_wrapper')
 )
 foreach ($c in $checks) {
   $txt = [IO.File]::ReadAllText((Join-Path $stage $c[0]))

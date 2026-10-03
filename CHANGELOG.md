@@ -1,3 +1,12 @@
+## v0.22.8
+
+- Parse the native WolvenKit `worldStreamingSector` JSON shape under the top-level `Data` object.
+- Read structured `worldNodeDataBuffer` JSON and resolve each placement through `NodeIndex`.
+- Add a persistent SQLite city evidence index so the full sector export only needs to be parsed once for subsequent detection passes.
+- Update the automatic city pipeline to reuse `build\\city_world_index.sqlite` when available.
+- Add `inspect-city-json` for fast single-sector format diagnostics.
+- Restrict city indexing to `*.streamingsector.json` exports (with a name-based fallback) to avoid parsing unrelated converted resources.
+
 ## v0.22.7
 
 - Add a city-scale world-data pipeline for large `.streamingsector` exports, using an XY spatial grid for proximity queries instead of full pairwise scans.

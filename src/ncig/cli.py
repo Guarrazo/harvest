@@ -35,6 +35,7 @@ from .native_architecture_audit import write_native_architecture_audit
 from .architecture_bounds import build_bounds_targets, merge_bounds_file
 from .target_detector import load_world_records, detect_building_candidates, candidates_to_buildings
 from .city_pipeline import load_city_records, detect_city_buildings
+from .city_index import build_city_index, inspect_city_json
 
 
 def cmd_generate(args: argparse.Namespace) -> int:
@@ -508,7 +509,17 @@ def _cmd_detect_buildings(args: argparse.Namespace) -> int:
 
 
 def _cmd_detect_city_buildings(args: argparse.Namespace) -> int:
-    records, manifest = load_city_records(args.input)
+    input_path = Path(args.input)
+    if input_path.suffix.lower() in {".sqlite", ".db"}:
+        from .city_index import load_index_records
+        records = load_index_records(input_path)
+        manifest = {
+            "format": "ncig-city-index-runtime-load-v1",
+            "database": str(input_path.resolve()),
+            "indexed_records_loaded": len(records),
+        }
+    else:
+        records, manifest = load_city_records(input_path)
     report = detect_city_buildings(records, cluster_radius_m=args.radius)
     report["world_manifest"] = manifest
     write_json(args.out, report)
@@ -522,6 +533,30 @@ def _cmd_detect_city_buildings(args: argparse.Namespace) -> int:
         "candidate_count": report["candidate_count"],
         "invalid_files": manifest["invalid_file_count"],
     }, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _cmd_index_city(args: argparse.Namespace) -> int:
+    manifest = build_city_index(args.input, args.out)
+    write_json(args.manifest_out, manifest)
+    print(json.dumps({
+        "database": args.out,
+        "manifest": args.manifest_out,
+        "json_files": manifest["json_file_count"],
+        "parsed_records": manifest["parsed_records"],
+        "indexed_records": manifest["indexed_records"],
+        "entrances": manifest["entrances"],
+        "architecture": manifest["architecture"],
+        "interior": manifest["interior"],
+        "invalid_files": manifest["invalid_file_count"],
+    }, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _cmd_inspect_city_json(args: argparse.Namespace) -> int:
+    report = inspect_city_json(args.input)
+    write_json(args.out, report)
+    print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0
 
 
@@ -844,6 +879,17 @@ def build_parser() -> argparse.ArgumentParser:
     dcity.add_argument("--out", required=True, help="ncig-city-building-candidates-v1 JSON")
     dcity.add_argument("--radius", type=float, default=18.0, help="Architecture-to-entrance search radius in metres")
     dcity.set_defaults(func=_cmd_detect_city_buildings)
+
+    ic = sub.add_parser("index-city-world", help="Build a persistent SQLite index from a large native streamingsector JSON export")
+    ic.add_argument("--input", required=True)
+    ic.add_argument("--out", required=True, help="SQLite database output")
+    ic.add_argument("--manifest-out", required=True, help="JSON manifest output")
+    ic.set_defaults(func=_cmd_index_city)
+
+    ij = sub.add_parser("inspect-city-json", help="Inspect one WolvenKit streamingsector JSON without scanning the whole export")
+    ij.add_argument("--input", required=True)
+    ij.add_argument("--out", required=True)
+    ij.set_defaults(func=_cmd_inspect_city_json)
 
     cb = sub.add_parser("candidates-to-buildings", help="Convert automatic building candidates into NCIG building anchors")
     cb.add_argument("--input", required=True, help="ncig-building-candidates-v1 JSON")

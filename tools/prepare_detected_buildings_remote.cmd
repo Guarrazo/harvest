@@ -26,7 +26,14 @@ if not defined PYTHONEXE (
 )
 call "%~dp0prepare_architecture_remote.cmd" "%SOURCE%"
 if errorlevel 1 exit /b %ERRORLEVEL%
-"%PYTHONEXE%" -m ncig.cli detect-city-buildings --input "%SECTORS%" --out build\auto_building_candidates.json
+if not exist "build\city_world_index.sqlite" (
+  echo NCIG: building persistent city index. This is the expensive pass over the exported sectors.
+  "%PYTHONEXE%" -m ncig.cli index-city-world --input "%SECTORS%" --out build\city_world_index.sqlite --manifest-out build\city_world_index_manifest.json
+  if errorlevel 1 exit /b %ERRORLEVEL%
+) else (
+  echo NCIG: reusing persistent city index: build\city_world_index.sqlite
+)
+"%PYTHONEXE%" -m ncig.cli detect-city-buildings --input build\city_world_index.sqlite --out build\auto_building_candidates.json
 if errorlevel 1 exit /b %ERRORLEVEL%
 "%PYTHONEXE%" -m ncig.cli candidates-to-buildings --input build\auto_building_candidates.json --out build\auto_buildings.json --min-score 75 --max-count %MAXCOUNT%
 if errorlevel 1 exit /b %ERRORLEVEL%
@@ -38,6 +45,8 @@ echo NCIG: architecture catalog for detected buildings: %CATALOG%
 "%PYTHONEXE%" -m ncig.cli architecture-assemble --layouts build\generated_auto\layouts.json --catalog "%CATALOG%" --out build\real_architecture_remote\architecture_assembly_auto.json
 if errorlevel 1 exit /b %ERRORLEVEL%
 echo NCIG automatic city target pipeline completed.
+echo Persistent city index: build\city_world_index.sqlite
+echo Index manifest: build\city_world_index_manifest.json
 echo World manifest: build\world_manifest.json
 echo Candidates: build\auto_building_candidates.json
 echo Selected buildings: build\auto_buildings.json

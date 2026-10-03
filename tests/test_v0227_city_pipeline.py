@@ -14,29 +14,59 @@ def test_spatial_index_returns_local_records_only():
     assert set(hits) == {0, 1}
 
 
-def test_loader_accepts_direct_single_sector_with_node_data():
+def test_loader_accepts_native_wolvenkit_data_wrapper_and_node_data():
     raw = {
-        "name": "sector_001",
-        "nodes": [
-            {
-                "type": "worldMeshNode",
-                "name": "shop_wall",
-                "data": {"mesh": {"DepotPath": {"$value": "base/environment/architecture/shop_wall_l300_w10_h300.mesh"}}},
-            }
-        ],
-        "nodeData": [
-            {
-                "NodeIndex": 0,
-                "Position": {"x": 10, "y": 20, "z": 3},
-                "Rotation": {"i": 0, "j": 0, "k": 0, "r": 1},
-            }
-        ],
+        "FormatVersion": 1,
+        "Data": {
+            "$type": "worldStreamingSector",
+            "category": "Exterior",
+            "nodes": [
+                {
+                    "$type": "worldStaticMeshNode",
+                    "debugName": "shop_wall",
+                    "mesh": {"DepotPath": {"$value": "base/environment/architecture/shop_wall_l300_w10_h300.mesh"}},
+                }
+            ],
+            "nodeData": {
+                "BufferId": "0",
+                "Flags": 0,
+                "Type": "WolvenKit.worldNodeDataBuffer",
+                "Data": [
+                    {
+                        "Position": {"X": 10, "Y": 20, "Z": 3, "W": 1},
+                        "Orientation": {"I": 0, "J": 0, "K": 0, "R": 1},
+                        "Scale": {"X": 1, "Y": 1, "Z": 1},
+                        "Pivot": {"X": 0, "Y": 0, "Z": 0},
+                        "Bounds": {
+                            "Min": {"X": 9, "Y": 19, "Z": 0},
+                            "Max": {"X": 11, "Y": 21, "Z": 6},
+                        },
+                        "NodeIndex": 0,
+                    }
+                ],
+            },
+        },
     }
-    records = _records_from_json(raw, "sector_001.json")
+    records = _records_from_json(raw, "sector_001.streamingsector.json")
     assert len(records) == 1
     assert records[0]["x"] == 10
     assert records[0]["y"] == 20
     assert records[0]["resource"].endswith("shop_wall_l300_w10_h300.mesh")
+    assert records[0]["type"] == "worldStaticMeshNode"
+
+
+def test_loader_uses_node_data_position_and_preserves_node_index():
+    raw = {
+        "Data": {
+            "$type": "worldStreamingSector",
+            "nodes": [{"$type": "worldStaticMeshNode", "mesh": {"DepotPath": {"$value": "base\\environment\\architecture\\wall_l300_w10_h300.mesh"}}}],
+            "nodeData": {"Data": [{"Position": {"X": 5, "Y": 6, "Z": 7, "W": 1}, "Orientation": {"I": 0, "J": 0, "K": 0, "R": 1}, "Scale": {"X": 1, "Y": 1, "Z": 1}, "NodeIndex": 0}]},
+        }
+    }
+    records = _records_from_json(raw, "sector.streamingsector.json")
+    assert len(records) == 1
+    assert (records[0]["x"], records[0]["y"], records[0]["z"]) == (5, 6, 7)
+    assert records[0]["node_index"] == 0
 
 
 def test_city_manifest_tracks_files_and_bounds(tmp_path):

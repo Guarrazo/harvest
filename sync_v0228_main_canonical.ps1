@@ -19,6 +19,7 @@ $files = @(
   'docs/V0.22.6_REAL_BUILDING_PIPELINE.md',
   'docs/V0.22.7_CITY_SCALE.md',
   'tools/prepare_detected_buildings_remote.cmd',
+  'tools/inspect_city_json_cp2077.cmd',
   'tests/test_v0227_city_pipeline.py',
   'tests/test_v0228_city_index.py',
   'tests/test_v021_geometry.py',
@@ -44,6 +45,7 @@ $checks = @(
   @('pyproject.toml','version = "0.22.8"'),
   @('src/ncig/cli.py','"generator_version": "0.22.8"'),
   @('tools/prepare_detected_buildings_remote.cmd','detect-city-buildings'),
+  @('tools/inspect_city_json_cp2077.cmd','PYTHONPATH'),
   @('tests/test_v0228_city_index.py','test_inspector_reports_wolvenkit_data_wrapper')
 )
 foreach ($c in $checks) {

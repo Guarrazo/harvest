@@ -54,7 +54,7 @@ foreach ($c in $checks) {
 }
 foreach ($rel in $files) {
   $target = Join-Path $Root $rel
-  if (Test-Path $target) { [IO.File]::Copy($target, "$target.bak_v0227_sync", $true) }
+  if (Test-Path $target) { [IO.File]::Copy($target, "$target.bak_v0228_sync", $true) }
   New-Item -ItemType Directory -Path (Split-Path -Parent $target) -Force | Out-Null
   Copy-Item (Join-Path $stage $rel) $target -Force
   Write-Host "Synced: $rel"

@@ -32,53 +32,68 @@ def _vec3(value: Any) -> tuple[float, float, float] | None:
 
 
 def _node_position(node: dict[str, Any]) -> tuple[float, float, float] | None:
-    for container in (node, node.get("transform"), node.get("Transform"), node.get("data"), node.get("Data")):
-        if not isinstance(container, dict):
-            continue
-        for key in ("position", "worldPosition", "nodePosition", "Position", "WorldPosition", "NodePosition", "pos"):
+    containers = [node]
+    for key in ("data", "Data", "transform", "Transform"):
+        value = node.get(key)
+        if isinstance(value, dict):
+            containers.append(value)
+    for container in containers:
+        for key in ("position", "worldPosition", "nodePosition", "Position", "WorldPosition", "NodePosition", "pos", "Pivot"):
             pos = _vec3(container.get(key))
             if pos is not None:
                 return pos
     return None
 
 
+def _depot_path(value: Any) -> str:
+    if isinstance(value, dict):
+        depot = value.get("DepotPath") or value.get("depotPath") or value.get("path")
+        if isinstance(depot, dict):
+            depot = depot.get("$value")
+        if isinstance(depot, str) and depot:
+            return depot.replace("/", "\\")
+    if isinstance(value, str) and value:
+        return value.replace("/", "\\")
+    return ""
+
+
 def _resource_path(node: dict[str, Any]) -> str:
-    for container in (node, node.get("data"), node.get("Data")):
-        if not isinstance(container, dict):
-            continue
+    containers = [node]
+    for key in ("data", "Data"):
+        value = node.get(key)
+        if isinstance(value, dict):
+            containers.append(value)
+    for container in containers:
         for key in (
             "mesh", "Mesh", "entityTemplate", "EntityTemplate",
             "resource", "Resource", "meshResource", "MeshResource",
         ):
-            value = container.get(key)
-            if isinstance(value, dict):
-                depot = value.get("DepotPath") or value.get("depotPath") or value.get("path")
-                if isinstance(depot, dict):
-                    depot = depot.get("$value")
-                if isinstance(depot, str) and depot:
-                    return depot.replace("/", "\\")
-            elif isinstance(value, str) and value:
-                return value.replace("/", "\\")
+            path = _depot_path(container.get(key))
+            if path:
+                return path
     return ""
 
 
 def _node_yaw(node: dict[str, Any]) -> float:
-    for container in (node, node.get("transform"), node.get("Transform"), node.get("data"), node.get("Data")):
-        if not isinstance(container, dict):
-            continue
+    containers = [node]
+    for key in ("data", "Data", "transform", "Transform"):
+        value = node.get(key)
+        if isinstance(value, dict):
+            containers.append(value)
+    for container in containers:
         for key in ("yaw_deg", "yaw", "Yaw", "YawDeg"):
             if container.get(key) is not None:
                 try:
                     return float(container[key])
                 except (TypeError, ValueError):
                     pass
-        rot = next((container.get(k) for k in ("rotation", "Rotation", "rot", "Rot") if isinstance(container.get(k), dict)), None)
+        rot = next((container.get(k) for k in ("rotation", "Rotation", "rot", "Rot", "Orientation") if isinstance(container.get(k), dict)), None)
         if isinstance(rot, dict):
             try:
-                x = float(rot.get("i", rot.get("x", 0.0)))
-                y = float(rot.get("j", rot.get("y", 0.0)))
-                z = float(rot.get("k", rot.get("z", 0.0)))
-                w = float(rot.get("r", rot.get("w", 1.0)))
+                x = float(rot.get("i", rot.get("x", rot.get("I", 0.0))))
+                y = float(rot.get("j", rot.get("y", rot.get("J", 0.0))))
+                z = float(rot.get("k", rot.get("z", rot.get("K", 0.0))))
+                w = float(rot.get("r", rot.get("w", rot.get("R", 1.0))))
                 return math.degrees(math.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z)))
             except (TypeError, ValueError):
                 pass
@@ -86,9 +101,12 @@ def _node_yaw(node: dict[str, Any]) -> float:
 
 
 def _node_scale(node: dict[str, Any]) -> tuple[float, float, float]:
-    for container in (node, node.get("transform"), node.get("Transform"), node.get("data"), node.get("Data")):
-        if not isinstance(container, dict):
-            continue
+    containers = [node]
+    for key in ("data", "Data", "transform", "Transform"):
+        value = node.get(key)
+        if isinstance(value, dict):
+            containers.append(value)
+    for container in containers:
         value = container.get("scale", container.get("Scale"))
         if isinstance(value, dict):
             try:
@@ -104,66 +122,115 @@ def _node_scale(node: dict[str, Any]) -> tuple[float, float, float]:
 
 def _flatten_nodes(container: dict[str, Any]) -> list[dict[str, Any]]:
     node_defs = container.get("nodes") if isinstance(container.get("nodes"), list) else []
-    placements = container.get("nodeData") if isinstance(container.get("nodeData"), list) else []
-    if placements and node_defs:
-        by_index = {i: item for i, item in enumerate(node_defs) if isinstance(item, dict)}
-        normalized: list[dict[str, Any]] = []
-        for placement in placements:
-            if not isinstance(placement, dict):
-                continue
-            raw_index = placement.get("NodeIndex", placement.get("nodeIndex", placement.get("node_index")))
-            try:
-                base = by_index.get(int(raw_index)) if raw_index is not None else None
-            except (TypeError, ValueError):
-                base = None
-            if not isinstance(base, dict):
-                continue
-            merged = dict(base)
-            merged.update({
-                k: v for k, v in placement.items()
-                if k not in {"NodeIndex", "nodeIndex", "node_index"}
-            })
-            normalized.append(merged)
-        if normalized:
-            return normalized
-    return [dict(item) for item in node_defs if isinstance(item, dict)]
+    if node_defs:
+        return [dict(item) for item in node_defs if isinstance(item, dict)]
+    return []
 
 
-def _records_from_json(raw: Any, source_file: str) -> list[dict[str, Any]]:
-    if not isinstance(raw, dict):
+def _node_type(node: dict[str, Any]) -> str:
+    for key in ("type", "nodeType", "Type", "NodeType", "$type"):
+        value = node.get(key)
+        if isinstance(value, str) and value:
+            return value.rsplit(".", 1)[-1].split(",")[0]
+    return ""
+
+
+def _node_name(node: dict[str, Any]) -> str:
+    for key in ("name", "nodeName", "Name", "NodeName", "debugName", "DebugName"):
+        value = node.get(key)
+        if isinstance(value, str):
+            return value
+    return ""
+
+
+def _node_index(value: Any) -> int | None:
+    try:
+        if isinstance(value, dict):
+            value = value.get("$value", value.get("value"))
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _node_data_entries(container: dict[str, Any]) -> list[dict[str, Any]]:
+    raw = container.get("nodeData") if "nodeData" in container else container.get("NodeData")
+    if isinstance(raw, list):
+        return [dict(item) for item in raw if isinstance(item, dict)]
+    if isinstance(raw, dict):
+        data = raw.get("Data")
+        if isinstance(data, list):
+            return [dict(item) for item in data if isinstance(item, dict)]
+        elements = raw.get("Elements")
+        if isinstance(elements, list):
+            return [dict(item) for item in elements if isinstance(item, dict)]
+    return []
+
+
+def _unwrap_sector(raw: dict[str, Any]) -> list[dict[str, Any]]:
+    if isinstance(raw.get("sectors"), list):
+        return [x for x in raw["sectors"] if isinstance(x, dict)]
+    if isinstance(raw.get("sector"), dict):
+        return [raw["sector"]]
+    data = raw.get("Data")
+    if isinstance(data, dict) and (
+        isinstance(data.get("nodes"), list) or isinstance(data.get("nodeData"), (dict, list))
+    ):
+        return [data]
+    if isinstance(raw.get("nodes"), list) or isinstance(raw.get("nodeData"), (dict, list)):
+        return [raw]
+    return []
+
+
+def _records_from_sector(sector: dict[str, Any], source_file: str) -> list[dict[str, Any]]:
+    nodes = _flatten_nodes(sector)
+    if not nodes:
         return []
-    sectors = raw.get("sectors")
-    if not isinstance(sectors, list):
-        if isinstance(raw.get("sector"), dict):
-            sectors = [raw["sector"]]
-        elif isinstance(raw.get("nodes"), list) or isinstance(raw.get("nodeData"), list):
-            sectors = [{
-                "name": raw.get("name") or raw.get("sectorName") or Path(source_file).stem,
-                "category": raw.get("category") or raw.get("sectorCategory") or "",
-                "nodes": raw.get("nodes", []),
-                "nodeData": raw.get("nodeData", []),
-            }]
-        else:
-            return []
-
+    by_index = {idx: node for idx, node in enumerate(nodes)}
+    placements = _node_data_entries(sector)
+    # A raw sector export can sometimes expose a structured placement list instead of
+    # the binary buffer. The nodeData reader in WolvenKit maps each placement to NodeIndex.
     records: list[dict[str, Any]] = []
-    for sector in sectors:
-        if not isinstance(sector, dict):
+    for placement in placements:
+        idx = _node_index(
+            placement.get("NodeIndex", placement.get("nodeIndex", placement.get("node_index")))
+        )
+        node = by_index.get(idx) if idx is not None else None
+        if not isinstance(node, dict):
             continue
-        sector_name = str(sector.get("name") or sector.get("sectorName") or Path(source_file).stem)
-        category = str(sector.get("category") or sector.get("sectorCategory") or "")
-        for node in _flatten_nodes(sector):
+        pos = _node_position(placement)
+        if pos is None:
+            continue
+        node_type = _node_type(node)
+        name = _node_name(node)
+        resource = _resource_path(node)
+        record = {
+            "source_file": source_file,
+            "sector": str(sector.get("name") or sector.get("sectorName") or Path(source_file).stem),
+            "category": str(sector.get("category") or sector.get("sectorCategory") or ""),
+            "type": node_type,
+            "name": name,
+            "resource": resource,
+            "x": pos[0], "y": pos[1], "z": pos[2],
+            "yaw_deg": _node_yaw(placement),
+            "scale": _node_scale(placement),
+            "dimensions_m": td._resource_dimensions(resource),
+            "text": " ".join((name, node_type, resource, str(sector.get("category") or ""))).lower().replace("/", "\\"),
+            "node_index": idx,
+        }
+        records.append(record)
+    # Some lightweight/Object-Spawner-style inputs put transforms directly on nodes.
+    if not records:
+        for node in nodes:
             pos = _node_position(node)
             if pos is None:
                 continue
-            node_type = str(node.get("type") or node.get("nodeType") or node.get("Type") or node.get("NodeType") or "")
-            name = str(node.get("name") or node.get("nodeName") or node.get("Name") or node.get("NodeName") or "")
+            node_type = _node_type(node)
+            name = _node_name(node)
             resource = _resource_path(node)
-            text = " ".join((name, node_type, resource, sector_name, category)).lower().replace("/", "\\")
             records.append({
                 "source_file": source_file,
-                "sector": sector_name,
-                "category": category,
+                "sector": str(sector.get("name") or sector.get("sectorName") or Path(source_file).stem),
+                "category": str(sector.get("category") or sector.get("sectorCategory") or ""),
                 "type": node_type,
                 "name": name,
                 "resource": resource,
@@ -171,27 +238,132 @@ def _records_from_json(raw: Any, source_file: str) -> list[dict[str, Any]]:
                 "yaw_deg": _node_yaw(node),
                 "scale": _node_scale(node),
                 "dimensions_m": td._resource_dimensions(resource),
-                "text": text,
+                "text": " ".join((name, node_type, resource, str(sector.get("category") or ""))).lower().replace("/", "\\"),
+                "node_index": None,
             })
     return records
 
 
-def load_city_records(input_path: str | Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    p = Path(input_path)
-    files = [p] if p.is_file() else sorted(p.rglob("*.json")) if p.is_dir() else []
+def _records_from_json(raw: Any, source_file: str) -> list[dict[str, Any]]:
+    if not isinstance(raw, dict):
+        return []
     records: list[dict[str, Any]] = []
+    for sector in _unwrap_sector(raw):
+        records.extend(_records_from_sector(sector, source_file))
+    return records
+
+
+
+def _sector_files(input_path: str | Path) -> list[Path]:
+    p = Path(input_path)
+    if p.is_file():
+        return [p]
+    if not p.is_dir():
+        return []
+    candidates = sorted(
+        x for x in p.rglob("*.json")
+        if x.name.lower().endswith(".streamingsector.json")
+    )
+    if candidates:
+        return candidates
+    # Fallback for exports whose converter removed the original extension.
+    return sorted(x for x in p.rglob("*.json") if "streamingsector" in x.name.lower())
+
+
+def _read_records_file(path: Path) -> list[dict[str, Any]]:
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    return _records_from_json(raw, str(path))
+
+
+def _compact_manifest(input_path: str | Path, files: list[Path], invalid: list[dict[str, str]], file_counts: dict[str, int], record_count: int, phase: str) -> dict[str, Any]:
+    return {
+        "format": "ncig-world-manifest-v3",
+        "input": str(Path(input_path).resolve()),
+        "phase": phase,
+        "json_file_count": len(files),
+        "valid_file_count": len(files) - len(invalid),
+        "invalid_file_count": len(invalid),
+        "invalid_files": invalid[:200],
+        "record_count": record_count,
+        "sector_file_candidates": len(files),
+        "largest_input_files": [
+            {"path": path, "record_count": count}
+            for path, count in sorted(file_counts.items(), key=lambda item: -item[1])[:20]
+        ],
+    }
+
+
+def load_city_records(input_path: str | Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Load only records relevant to building detection; do not retain all exported JSON data."""
+    files = _sector_files(input_path)
     invalid: list[dict[str, str]] = []
-    file_record_counts: dict[str, int] = {}
+    file_counts: dict[str, int] = {}
+    entrances: list[dict[str, Any]] = []
+
+    # Pass 1: only entrances are kept. This is normally tiny compared with all world data.
     for path in files:
         try:
-            raw = json.loads(path.read_text(encoding="utf-8"))
-            parsed = _records_from_json(raw, str(path))
-            records.extend(parsed)
-            file_record_counts[str(path)] = len(parsed)
+            parsed = _read_records_file(path)
         except (OSError, json.JSONDecodeError) as exc:
-            invalid.append({"path": str(path), "error": type(exc).__name__})
-    manifest = build_city_manifest(records, files, invalid, file_record_counts, str(p))
-    return records, manifest
+            invalid.append({"path": str(path), "error": type(exc).__name__, "message": str(exc)[:240]})
+            continue
+        file_counts[str(path)] = len(parsed)
+        entrances.extend(r for r in parsed if td._is_entrance(r) and not td._is_interior(r))
+
+    entrance_groups = _clusters(entrances, 4.0)
+    entrance_centers = [
+        {
+            "x": sum(r["x"] for r in group) / len(group),
+            "y": sum(r["y"] for r in group) / len(group),
+            "z": sum(r["z"] for r in group) / len(group),
+        }
+        for group in entrance_groups
+        if group
+    ]
+    entrance_index = SpatialIndex(entrances, 16.0) if entrances else None
+
+    # Pass 2: keep only architecture/interior evidence near a discovered entrance.
+    relevant: list[dict[str, Any]] = list(entrances)
+    kept_files = 0
+    kept_count = len(entrances)
+    for path in files:
+        try:
+            parsed = _read_records_file(path)
+        except (OSError, json.JSONDecodeError):
+            continue
+        kept_here = 0
+        for record in parsed:
+            if td._is_interior(record):
+                include = entrance_index is not None and bool(
+                    entrance_index.query(float(record["x"]), float(record["y"]), 24.0)
+                )
+            elif td._is_architecture(record):
+                include = entrance_index is not None and bool(
+                    entrance_index.query(float(record["x"]), float(record["y"]), 24.0)
+                )
+            else:
+                include = False
+            if include:
+                relevant.append(record)
+                kept_here += 1
+        if kept_here:
+            kept_files += 1
+            kept_count += kept_here
+
+    manifest = _compact_manifest(input_path, files, invalid, file_counts, kept_count, "two_pass_reduced")
+    manifest.update({
+        "all_entrance_count": len(entrances),
+        "entrance_group_count": len(entrance_groups),
+        "relevant_record_count": len(relevant),
+        "relevant_file_count": kept_files,
+        "reduction_ratio": round((1.0 - (len(relevant) / max(1, sum(file_counts.values())))), 6),
+        "notes": [
+            "WolvenKit exports a worldStreamingSector under a top-level Data object.",
+            "nodeData is a structured worldNodeDataBuffer; each placement references nodes by NodeIndex.",
+            "The city pipeline scans JSON files twice but retains only entrances and nearby architecture/interior evidence for detection.",
+        ],
+    })
+    return relevant, manifest
 
 
 class SpatialIndex:

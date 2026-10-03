@@ -1,4 +1,4 @@
-# NCIG v0.22.7
+# NCIG v0.22.8
 
 
 Esta iteración corrige un problema físico importante detectado en la prueba de `demo_shop_001`: los nombres de meshes CP77 usan `w/l/h` con semánticas distintas según la clase. Los muros y puertas ya no interpretan un `_w300` como 30 cm de tramo.

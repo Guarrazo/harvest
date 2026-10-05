@@ -1,0 +1,15 @@
+NCIG v0.23.0 overlay
+
+1) Extract this ZIP over the local C:\Users\Guarrazo\Desktop\NCIG repository, preserving folders.
+2) Run tools\apply_v0230_native_collision_fix.ps1 from the repo root once.
+3) Re-run the same command as before:
+   .\tools\prepare_detected_buildings_remote.cmd https://github.com/Guarrazo/harvest C:\CyberpunkExports\sectors 10
+
+Expected new outputs:
+- build\auto_building_candidates_refined.json
+- build\generated_auto\layouts_pre_v0230.json
+- build\generated_auto\layouts_v0230.json
+- build\real_architecture_remote\architecture_catalog_v0230_clean.json
+- build\real_architecture_remote\architecture_assembly_auto.json (rebuilt from the clean catalog and refined layouts)
+
+The existing city SQLite index remains reusable unless its normal compatibility check invalidates it.

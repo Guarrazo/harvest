@@ -1,0 +1,7 @@
+NCIG v0.25.1 installation
+
+1. Extract this overlay over the existing NCIG checkout.
+2. It is a hotfix for v0.25.0; no deletion or destructive sector editing is performed.
+3. Run the normal prepare_detected_buildings_remote.cmd command again.
+4. Confirm that `build\auto_building_candidates.json` is regenerated without the `detect-city-buildings` argparse error.
+5. Then inspect `build\collision_probe_first_safe.json`.

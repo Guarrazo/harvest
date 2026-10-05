@@ -1,0 +1,22 @@
+NCIG v0.24.0 overlay
+
+Apply this ZIP over an existing NCIG v0.23.0 working copy.
+
+It adds:
+  src/ncig/physics_index.py
+  src/ncig/world_audit.py
+  src/ncig/style_assembler.py
+  tools/audit_buildings_access_cp2077.cmd
+  an updated tools/prepare_detected_buildings_remote.cmd
+
+Then run the normal prepare_detected_buildings_remote.cmd command. The first run builds:
+  build\world_physics_index.sqlite
+  build\world_physics_index.json
+
+That pass reads the exported streamingsector files once to index worldCollisionNode, worldBuildingProxyMeshNode and exterior door evidence. Future runs reuse the index.
+
+The pipeline then writes:
+  build\auto_building_candidates_access.json
+  build\collision_removal_manifest.json
+
+The manifest is evidence only. It does not guess an ArchiveXL depot sector path. Large shell colliders are intentionally not auto-removed.

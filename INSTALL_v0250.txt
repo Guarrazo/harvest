@@ -1,0 +1,13 @@
+NCIG v0.25.0 install
+
+1. Extract this overlay over the existing NCIG project directory.
+2. Keep the v0.24 files already installed.
+3. No new Python dependency is required.
+4. Run the collision probe only after v0.24 has generated build\collision_removal_manifest.json.
+
+First probe:
+tools\probe_collision_manifest_cp2077.cmd build\collision_removal_manifest.json C:\CyberpunkExports\sectors build\collision_probes.json auto_11424_commercial 1 --safe-only
+
+The command is read-only. It never changes the exported sector files.
+
+Optional seventh argument: an output .archive.xl path. The probe writes a review-only deletion draft only when the sector path is uniquely recoverable from the exported JSON.

@@ -1,0 +1,11 @@
+Apply this overlay over NCIG v0.25.x.
+
+If NCIG v0.25.1 is currently stuck after:
+  NCIG: reusing compatible persistent city index: build\city_world_index.sqlite
+  NCIG: reusing compatible persistent physics index: build\world_physics_index.sqlite
+
+press Ctrl+C. The stage is read-only.
+
+Then rerun the normal prepare command. The existing city/physics indexes are reused. The detector now reads only entrance rows globally and queries the rest by SQLite spatial cells.
+
+The exact collision probe is generated after the access audit. No ArchiveXL file is generated unless a verified depot sector path is explicitly supplied to the probe command.

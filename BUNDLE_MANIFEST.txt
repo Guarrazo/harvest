@@ -1,0 +1,5 @@
+Bundle: NCIG_v0.22.9_CR2W_parser_fix_sync
+Source repository: https://github.com/Guarrazo/harvest
+Main head verified: 024077a5c2effd61cdad15566daf7a8bf4500fe6
+Purpose: local source sync + parser repair
+Contents are not a full repository.

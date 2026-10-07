@@ -3,15 +3,15 @@ setlocal EnableExtensions
 cd /d "%~dp0.."
 
 set "EXPORT=%~1"
-if not defined EXPORT set "EXPORT=C:\Users\Guarrazo\Desktop\mesh_probe.json"
 set "BUILDING=%~2"
 if not defined BUILDING set "BUILDING=auto_10712_industrial"
+set "SECTORS=C:\CyberpunkExports\sectors"
+set "BASE=examples\ncig_probe_exported.json"
 
-if not exist "%EXPORT%" (
-  echo NCIG v0.31: native reference export not found:
-  echo   %EXPORT%
-  echo.
-  echo Provide ONE real World Builder/Object Spawner export containing at least one Static Mesh worldMeshNode.
+if defined EXPORT if exist "%EXPORT%" set "BASE=%EXPORT%"
+if not exist "%SECTORS%" (
+  echo NCIG v0.32: exported streamingsector directory not found:
+  echo   %SECTORS%
   exit /b 2
 )
 
@@ -19,7 +19,7 @@ set "LAYOUTS=build\generated_auto\layouts_v0280.json"
 if not exist "%LAYOUTS%" set "LAYOUTS=build\generated_auto\layouts.json"
 if not exist "%LAYOUTS%" set "LAYOUTS=build\generated\layouts.json"
 if not exist "%LAYOUTS%" (
-  echo NCIG v0.31: completed structural layouts not found.
+  echo NCIG v0.32: completed structural layouts not found.
   echo Expected build\generated_auto\layouts_v0280.json or build\generated_auto\layouts.json
   exit /b 3
 )
@@ -35,7 +35,6 @@ if not exist "%ASSEMBLY%" (
 set "CACHE=build\remote_harvest"
 set "BASE_TEMPLATES=%CACHE%\templates.json"
 set "TEMPLATES=build\native_test\native_templates.json"
-set "PROBE_REPORT=build\native_test\native_probe_report.json"
 set "OUTDIR=build\native_test"
 set "NATIVE=%OUTDIR%\%BUILDING%.json"
 set "REPORT=%OUTDIR%\%BUILDING%.report.json"
@@ -54,7 +53,7 @@ if not defined PYTHONEXE (
 )
 
 echo.
-echo === NCIG v0.31: native test pipeline ===
+echo === NCIG v0.32: native test pipeline ===
 echo Building: %BUILDING%
 echo Layouts:  %LAYOUTS%
 echo Assembly: %ASSEMBLY%
@@ -68,16 +67,20 @@ if errorlevel 12 (
   exit /b 12
 )
 
-call "%~dp0native_probe_cp2077.cmd" "%EXPORT%" "%PROBE_REPORT%" "%TEMPLATES%" "%BASE_TEMPLATES%"
-if errorlevel 1 exit /b %ERRORLEVEL%
-
-"%PYTHONEXE%" -c "import json,sys; d=json.load(open(r'%TEMPLATES%',encoding='utf-8')); n=d.get('templates',{}).get('worldMeshNode',[]); print('Real worldMeshNode templates:',len(n)); sys.exit(0 if n else 13)"
-if errorlevel 13 (
-  echo.
-  echo NCIG v0.31: the reference export contains no worldMeshNode.
-  echo This is the only missing external input for native architecture export.
-  echo The procedural architecture itself is already generated.
-  exit /b 13
+rem Prefer templates already harvested from the installed mod/export cache, then harvest directly
+rem from the user's exported streamingsector JSONs. This removes the old dependency on a second
+rem manually prepared World Builder mesh probe.
+if defined EXPORT if exist "%EXPORT%" (
+  call "%~dp0native_probe_cp2077.cmd" "%EXPORT%" "build\native_test\native_probe_report.json" "%TEMPLATES%" "%BASE_TEMPLATES%"
+  if errorlevel 1 exit /b %ERRORLEVEL%
+)
+if not exist "%TEMPLATES%" (
+  if exist "%BASE_TEMPLATES%" (
+    "%PYTHONEXE%" -m ncig.cli native-template-harvest --root "%SECTORS%" --out "%TEMPLATES%" --base-templates "%BASE_TEMPLATES%" --max-files 2048
+  ) else (
+    "%PYTHONEXE%" -m ncig.cli native-template-harvest --root "%SECTORS%" --out "%TEMPLATES%" --max-files 2048
+  )
+  if errorlevel 1 exit /b %ERRORLEVEL%
 )
 
 rem Add real .ent decoration when the remote harvest is present.
@@ -106,7 +109,7 @@ if "%USE_DECOR%"=="1" (
 if errorlevel 1 exit /b %ERRORLEVEL%
 
 echo.
-echo === NCIG v0.31: native test BUILD COMPLETE ===
+echo === NCIG v0.32: native test BUILD COMPLETE ===
 echo Native JSON : %NATIVE%
 echo Build report: %REPORT%
 echo Audit report: %AUDIT%

@@ -32,6 +32,7 @@ from .native_composition import write_native_composition
 from .native_probe import write_native_probe
 from .native_architecture import write_native_architecture_export
 from .native_architecture_audit import write_native_architecture_audit
+from .native_template_harvest import write_native_template_harvest
 from .architecture_bounds import build_bounds_targets, merge_bounds_file
 from .target_detector import load_world_records, detect_building_candidates, candidates_to_buildings
 
@@ -478,6 +479,16 @@ def _layout_from_raw(raw: dict[str, Any]):
     return Layout(b, rooms, sockets, sectors, raw.get("warnings", []))
 
 
+def _cmd_native_template_harvest(args: argparse.Namespace) -> int:
+    report = write_native_template_harvest(args.root, args.out, base_templates_path=args.base_templates, max_files=args.max_files)
+    print(json.dumps({
+        "written": args.out,
+        "files_scanned": report.get("harvest", {}).get("files_scanned", 0),
+        "template_counts": report.get("counts", {}),
+        "mesh_fallback": bool(report.get("harvest", {}).get("mesh_fallback")),
+    }, indent=2, ensure_ascii=False))
+    return 0
+
 def _cmd_native_composition(args: argparse.Namespace) -> int:
     report = write_native_composition(args.layouts, args.assembly, args.templates, args.base, args.out, args.report, decoration_path=args.decoration, include_collisions=not args.no_collisions, streaming_margin_m=args.streaming_margin, building_id=args.building_id)
     print(json.dumps({"written": args.out, **report}, indent=2, ensure_ascii=False))
@@ -763,6 +774,13 @@ def build_parser() -> argparse.ArgumentParser:
     ane.add_argument("--report", help="Optional sidecar diagnostic report")
     ane.add_argument("--building-id", help="Emit only one building; otherwise all buildings present in layouts and assembly")
     ane.set_defaults(func=_cmd_architecture_native_export)
+
+    nth = sub.add_parser("native-template-harvest", help="Harvest usable native node templates directly from exported streamingsector JSONs")
+    nth.add_argument("--root", required=True, help="Directory containing exported streamingsector JSONs")
+    nth.add_argument("--out", required=True, help="ncig-template-harvest-v1 output")
+    nth.add_argument("--base-templates", help="Optional existing template harvest to merge")
+    nth.add_argument("--max-files", type=int, default=2048)
+    nth.set_defaults(func=lambda a: _cmd_native_template_harvest(a))
 
     ana = sub.add_parser("architecture-native-audit", help="Validate native architecture output against the real worldMeshNode template and assembly")
     ana.add_argument("--native", required=True, help="Native Object Spawner JSON produced by architecture-native-export")

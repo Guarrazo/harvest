@@ -51,7 +51,7 @@ def harvest_native_templates(
     # prefilter first, then fully parse only files that advertise one of the
     # missing node types. This makes an exhaustive city export scan practical.
     markers = {
-        node_type: re.compile(r'"type"\\s*:\\s*"' + re.escape(node_type) + r'"')
+        node_type: re.compile(r'"type"\s*:\s*"' + re.escape(node_type) + r'"')
         for node_type in sorted(needed)
     }
     parsed_files = 0

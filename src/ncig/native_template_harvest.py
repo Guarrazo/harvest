@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -46,14 +47,35 @@ def harvest_native_templates(
     source_files: list[str] = []
     scanned = 0
 
+    # Most sector JSONs contain no native template nodes. Do a cheap textual
+    # prefilter first, then fully parse only files that advertise one of the
+    # missing node types. This makes an exhaustive city export scan practical.
+    markers = {
+        node_type: re.compile(r'"type"\\s*:\\s*"' + re.escape(node_type) + r'"')
+        for node_type in sorted(needed)
+    }
+    parsed_files = 0
+    candidate_files = 0
+
     for path in sorted(root_path.rglob("*.json")):
         if max_files is not None and scanned >= max_files:
             break
         scanned += 1
         try:
-            obj = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            raw = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
             continue
+
+        missing_types = [node_type for node_type in sorted(needed) if node_type not in found]
+        if missing_types and not any(markers[node_type].search(raw) for node_type in missing_types):
+            continue
+
+        candidate_files += 1
+        try:
+            obj = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        parsed_files += 1
         nodes = template_nodes_from_json(obj)
         selected = False
         for node_type in sorted(needed):
@@ -81,6 +103,8 @@ def harvest_native_templates(
         "harvest": {
             "mode": "streamingsector_recursive",
             "files_scanned": scanned,
+            "candidate_files": candidate_files,
+            "files_parsed": parsed_files,
             "required_types": sorted(needed),
             "real_types_found": sorted(found),
         },

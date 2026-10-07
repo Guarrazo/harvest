@@ -53,7 +53,7 @@ if not defined PYTHONEXE (
 )
 
 echo.
-echo === NCIG v0.32: native test pipeline ===
+echo === NCIG v0.32.5: native test pipeline ===
 echo Building: %BUILDING%
 echo Layouts:  %LAYOUTS%
 echo Assembly: %ASSEMBLY%
@@ -80,11 +80,11 @@ rem Always merge the sector-derived templates. This fills any missing node types
 rem from an explicit World Builder probe instead of letting that probe become a gate.
 set "MERGED_TEMPLATES=build\native_test\native_templates_merged.json"
 if exist "%TEMPLATES%" (
-  "%PYTHONEXE%" -m ncig.cli native-template-harvest --root "%SECTORS%" --out "%MERGED_TEMPLATES%" --base-templates "%TEMPLATES%" --max-files 2048
+  "%PYTHONEXE%" -m ncig.cli native-template-harvest --root "%SECTORS%" --out "%MERGED_TEMPLATES%" --base-templates "%TEMPLATES%" --max-files 50000
 ) else if exist "%BASE_TEMPLATES%" (
-  "%PYTHONEXE%" -m ncig.cli native-template-harvest --root "%SECTORS%" --out "%TEMPLATES%" --base-templates "%BASE_TEMPLATES%" --max-files 2048
+  "%PYTHONEXE%" -m ncig.cli native-template-harvest --root "%SECTORS%" --out "%TEMPLATES%" --base-templates "%BASE_TEMPLATES%" --max-files 50000
 ) else (
-  "%PYTHONEXE%" -m ncig.cli native-template-harvest --root "%SECTORS%" --out "%TEMPLATES%" --max-files 2048
+  "%PYTHONEXE%" -m ncig.cli native-template-harvest --root "%SECTORS%" --out "%TEMPLATES%" --max-files 50000
 )
 if errorlevel 1 exit /b %ERRORLEVEL%
 if exist "%MERGED_TEMPLATES%" move /Y "%MERGED_TEMPLATES%" "%TEMPLATES%" >nul

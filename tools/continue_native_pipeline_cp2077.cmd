@@ -57,7 +57,8 @@ echo === NCIG v0.32: native test pipeline ===
 echo Building: %BUILDING%
 echo Layouts:  %LAYOUTS%
 echo Assembly: %ASSEMBLY%
-echo Export:   %EXPORT%
+echo Base:     %BASE%
+echo Sectors:  %SECTORS%
 echo.
 
 "%PYTHONEXE%" -c "import json,sys; b=r'%BUILDING%'; l=json.load(open(r'%LAYOUTS%',encoding='utf-8')); a=json.load(open(r'%ASSEMBLY%',encoding='utf-8')); lm={str((x.get('building') or {}).get('id')) for x in l.get('layouts',[]) if isinstance(x,dict)}; am={str(x.get('id')) for x in a.get('buildings',[]) if isinstance(x,dict)}; sys.exit(0 if b in lm and b in am else 12)"
@@ -74,14 +75,20 @@ if defined EXPORT if exist "%EXPORT%" (
   call "%~dp0native_probe_cp2077.cmd" "%EXPORT%" "build\native_test\native_probe_report.json" "%TEMPLATES%" "%BASE_TEMPLATES%"
   if errorlevel 1 exit /b %ERRORLEVEL%
 )
-if not exist "%TEMPLATES%" (
-  if exist "%BASE_TEMPLATES%" (
-    "%PYTHONEXE%" -m ncig.cli native-template-harvest --root "%SECTORS%" --out "%TEMPLATES%" --base-templates "%BASE_TEMPLATES%" --max-files 2048
-  ) else (
-    "%PYTHONEXE%" -m ncig.cli native-template-harvest --root "%SECTORS%" --out "%TEMPLATES%" --max-files 2048
-  )
-  if errorlevel 1 exit /b %ERRORLEVEL%
+
+rem Always merge the sector-derived templates. This fills any missing node types
+rem from an explicit World Builder probe instead of letting that probe become a gate.
+set "MERGED_TEMPLATES=build\native_test\native_templates_merged.json"
+if exist "%TEMPLATES%" (
+  "%PYTHONEXE%" -m ncig.cli native-template-harvest --root "%SECTORS%" --out "%MERGED_TEMPLATES%" --base-templates "%TEMPLATES%" --max-files 2048
+) else if exist "%BASE_TEMPLATES%" (
+  "%PYTHONEXE%" -m ncig.cli native-template-harvest --root "%SECTORS%" --out "%TEMPLATES%" --base-templates "%BASE_TEMPLATES%" --max-files 2048
+) else (
+  "%PYTHONEXE%" -m ncig.cli native-template-harvest --root "%SECTORS%" --out "%TEMPLATES%" --max-files 2048
 )
+if errorlevel 1 exit /b %ERRORLEVEL%
+if exist "%MERGED_TEMPLATES%" move /Y "%MERGED_TEMPLATES%" "%TEMPLATES%" >nul
+
 
 rem Add real .ent decoration when the remote harvest is present.
 if exist "%CACHE%\harvest.json" (
@@ -95,7 +102,7 @@ if exist "%CACHE%\harvest.json" (
 )
 
 if "%USE_DECOR%"=="1" (
-  "%PYTHONEXE%" -m ncig.cli architecture-native-compose --layouts "%LAYOUTS%" --assembly "%ASSEMBLY%" --templates "%TEMPLATES%" --base "%EXPORT%" --out "%NATIVE%" --report "%REPORT%" --building-id "%BUILDING%" --streaming-margin 32 --decoration "%DECOR_PLAN%"
+  "%PYTHONEXE%" -m ncig.cli architecture-native-compose --layouts "%LAYOUTS%" --assembly "%ASSEMBLY%" --templates "%TEMPLATES%" --base "%BASE%" --out "%NATIVE%" --report "%REPORT%" --building-id "%BUILDING%" --streaming-margin 32 --decoration "%DECOR_PLAN%"
 ) else (
   "%PYTHONEXE%" -m ncig.cli architecture-native-compose --layouts "%LAYOUTS%" --assembly "%ASSEMBLY%" --templates "%TEMPLATES%" --base "%EXPORT%" --out "%NATIVE%" --report "%REPORT%" --building-id "%BUILDING%" --streaming-margin 32
 )

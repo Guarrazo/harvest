@@ -45,3 +45,10 @@ def test_single_storey_does_not_create_floor_hole():
     floor_nodes = [n for n in nodes if "_COLL_floor" in str(n.get("nodeRef", ""))]
     assert len(floor_nodes) == 1
     assert "_seg" not in str(floor_nodes[0].get("nodeRef", ""))
+
+
+def test_structural_role_is_accepted_by_room_model():
+    from ncig.model import Room
+
+    room = Room(id="r", kind="stairwell", floor=0, x=0.0, y=0.0, width=2.6, depth=3.2, structural_role="vertical_core")
+    assert room.structural_role == "vertical_core"

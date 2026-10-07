@@ -131,26 +131,65 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
         else:
             min_y = min(float(r.get("y", 0.0)) for r in floor_rooms)
             max_y = max(float(r.get("y", 0.0)) + float(r.get("depth", 0.0)) for r in floor_rooms)
-        w = max(0.1, max_x - min_x)
-        d = max(0.1, max_y - min_y)
-        center = _world(
-            building,
-            (min_x + max_x) * 0.5,
-            (min_y + max_y) * 0.5,
-            floor * FLOOR_HEIGHT - FLOOR_THICKNESS,
-        )
+
+        # v0.28 reserves a continuous stairwell shaft at the same local XY on
+        # every floor. A single full-footprint floor collider would therefore
+        # seal that shaft and make the generated stairs physically unusable.
+        # Carve the shaft out of the slab on every non-top floor of a
+        # multi-storey continuous core, while keeping a cap on the top floor.
+        void = None
+        floors_total = max(1, int(building.get("floors", 1) or 1))
+        vertical_core = building.get("vertical_core") or {}
+        core_room = next((r for r in floor_rooms if str(r.get("kind")) == "stairwell"), None)
+        if (
+            floors_total > 1
+            and bool(vertical_core.get("continuous"))
+            and floor < floors_total - 1
+            and core_room is not None
+        ):
+            vx0 = max(min_x, float(core_room.get("x", 0.0)))
+            vy0 = max(min_y, float(core_room.get("y", 0.0)))
+            vx1 = min(max_x, vx0 + float(core_room.get("width", 0.0)))
+            vy1 = min(max_y, vy0 + float(core_room.get("depth", 0.0)))
+            if vx1 - vx0 > 0.10 and vy1 - vy0 > 0.10:
+                void = (vx0, vy0, vx1, vy1)
+
+        segments: list[tuple[float, float, float, float]] = []
+        if void is None:
+            segments.append((min_x, min_y, max_x, max_y))
+        else:
+            vx0, vy0, vx1, vy1 = void
+            if vx0 - min_x > 0.05:
+                segments.append((min_x, min_y, vx0, max_y))
+            if max_x - vx1 > 0.05:
+                segments.append((vx1, min_y, max_x, max_y))
+            if vx1 - vx0 > 0.10 and vy0 - min_y > 0.05:
+                segments.append((vx0, min_y, vx1, vy0))
+            if vx1 - vx0 > 0.10 and max_y - vy1 > 0.05:
+                segments.append((vx0, vy1, vx1, max_y))
+
         ref_id = str(building.get("id", "building"))
-        floor_ref = f"$/#{ref_id}_F{floor + 1:02d}_COLL_floor"
-        floor_name = f"[NCIG COLLISION] {ref_id}_F{floor + 1:02d}_floor"
-        nodes.append(_box(
-            template,
-            name=floor_name,
-            ref=floor_ref,
-            pos=center,
-            half=(w * 0.5, d * 0.5, FLOOR_THICKNESS),
-            yaw=float(building.get("yaw_deg", 0.0)),
-        ))
-        floor_node_count += 1
+        for seg_index, (sx0, sy0, sx1, sy1) in enumerate(segments, 1):
+            w = max(0.1, sx1 - sx0)
+            d = max(0.1, sy1 - sy0)
+            center = _world(
+                building,
+                (sx0 + sx1) * 0.5,
+                (sy0 + sy1) * 0.5,
+                floor * FLOOR_HEIGHT - FLOOR_THICKNESS,
+            )
+            suffix = f"_seg{seg_index:02d}" if len(segments) > 1 else ""
+            floor_ref = f"$/#{ref_id}_F{floor + 1:02d}_COLL_floor{suffix}"
+            floor_name = f"[NCIG COLLISION] {ref_id}_F{floor + 1:02d}_floor{suffix}"
+            nodes.append(_box(
+                template,
+                name=floor_name,
+                ref=floor_ref,
+                pos=center,
+                half=(w * 0.5, d * 0.5, FLOOR_THICKNESS),
+                yaw=float(building.get("yaw_deg", 0.0)),
+            ))
+            floor_node_count += 1
 
     for room in rooms:
         rid = str(room.get("id"))
@@ -248,7 +287,7 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
                         center_axis = (entry_opening[0] + entry_opening[1]) * 0.5
                         _append_header_collision(
                             nodes, template, building=building, rid=rid, side=side, floor=floor,
-                            center_axis=center_axis, gap=entry_opening[1] - entry_opening[0],
+                            gap=entry_opening[1] - entry_opening[0],
                             x=rx, y=ry + center_axis,
                         )
                     continue
@@ -278,7 +317,7 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
                         center_axis = (entry_opening[0] + entry_opening[1]) * 0.5
                         _append_header_collision(
                             nodes, template, building=building, rid=rid, side=side, floor=floor,
-                            center_axis=center_axis, gap=entry_opening[1] - entry_opening[0],
+                            gap=entry_opening[1] - entry_opening[0],
                             x=rx + w, y=ry + center_axis,
                         )
                     continue
@@ -297,5 +336,5 @@ def build_room_collisions(layout: dict[str, Any], *, template: dict[str, Any] | 
         "node_count": len(nodes),
         "room_count": len(rooms),
         "floor_node_count": floor_node_count,
-        "policy": "continuous_floor_per_floor_plus_room_shell_walls_with_door_openings_plus_door_headers",
+        "policy": "segmented_floor_per_floor_with_continuous_stairwell_voids_plus_room_shell_walls_with_door_openings_plus_door_headers",
     }

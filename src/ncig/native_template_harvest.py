@@ -87,7 +87,13 @@ def harvest_native_templates(
     }
 
     if base_templates:
+        # merge_template_harvests intentionally returns a normalized harvest
+        # envelope; restore the scan metadata here because the native fallback
+        # decision and audit report depend on it.
+        scan_meta = copy.deepcopy(harvested.get("harvest") or {})
         harvested = merge_template_harvests(base_templates, harvested)
+        harvested["harvest"] = scan_meta
+        harvested["harvest"]["base_templates_merged"] = True
 
     # Mesh is the only hard rendering dependency. When the supplied world export
     # set does not contain one, provide the known reference serializer as an

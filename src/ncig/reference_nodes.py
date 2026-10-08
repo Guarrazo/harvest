@@ -147,10 +147,11 @@ def mesh_node(
     scale: dict[str, float] | None = None,
     render_profile: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Build a World Builder-compatible mesh payload.
+    """Build the worldMeshNode shape emitted by entSpawner's Static Mesh exporter.
 
-    The exporter source defines this payload shape. Render-option enum values vary by
-    exporter revision, so callers should supply a harvested render_profile where possible.
+    Render-option enum defaults mirror the current upstream constructor/export path.
+    A harvested template can still override the profile when an exact game-side variant
+    is desired.
     """
     profile = {
         "castLocalShadows": "Default",
@@ -175,7 +176,7 @@ def mesh_node(
         uk11=512,
     )
     out["data"] = {
-        "mesh": {"DepotPath": resource_path(mesh_path)},
+        "mesh": {"DepotPath": {"$storage": "string", "$value": str(mesh_path)}},
         "meshAppearance": cname(appearance),
         **profile,
     }

@@ -10,7 +10,7 @@ set "BASE=examples\ncig_probe_exported.json"
 
 if defined EXPORT if exist "%EXPORT%" set "BASE=%EXPORT%"
 if not exist "%SECTORS%" (
-  echo NCIG v0.32: exported streamingsector directory not found:
+  echo NCIG v0.33: exported streamingsector directory not found:
   echo   %SECTORS%
   exit /b 2
 )
@@ -19,7 +19,7 @@ set "LAYOUTS=build\generated_auto\layouts_v0280.json"
 if not exist "%LAYOUTS%" set "LAYOUTS=build\generated_auto\layouts.json"
 if not exist "%LAYOUTS%" set "LAYOUTS=build\generated\layouts.json"
 if not exist "%LAYOUTS%" (
-  echo NCIG v0.32: completed structural layouts not found.
+  echo NCIG v0.33: completed structural layouts not found.
   echo Expected build\generated_auto\layouts_v0280.json or build\generated_auto\layouts.json
   exit /b 3
 )
@@ -45,6 +45,13 @@ set "USE_DECOR=0"
 
 if not exist "%OUTDIR%" mkdir "%OUTDIR%"
 
+set "PYTHONEXE="
+for /f "delims=" %%P in ('py -3 -c "import sys; print(sys.executable)" 2^>nul') do if not defined PYTHONEXE set "PYTHONEXE=%%P"
+if not defined PYTHONEXE (
+  echo NCIG v0.33: Windows Python 3 was not found.
+  exit /b 5
+)
+
 if not exist "%TEMPLATES%" (
   >"%TEMPLATES%" echo {"format":"ncig-template-harvest-v1","templates":{},"counts":{}}
 )
@@ -64,7 +71,7 @@ if exist "%CACHE%\harvest.json" (
 if "%USE_DECOR%"=="1" (
   "%PYTHONEXE%" -m ncig.cli architecture-native-compose --layouts "%LAYOUTS%" --assembly "%ASSEMBLY%" --templates "%TEMPLATES%" --base "%BASE%" --out "%NATIVE%" --report "%REPORT%" --building-id "%BUILDING%" --streaming-margin 32 --decoration "%DECOR_PLAN%"
 ) else (
-  "%PYTHONEXE%" -m ncig.cli architecture-native-compose --layouts "%LAYOUTS%" --assembly "%ASSEMBLY%" --templates "%TEMPLATES%" --base "%EXPORT%" --out "%NATIVE%" --report "%REPORT%" --building-id "%BUILDING%" --streaming-margin 32
+  "%PYTHONEXE%" -m ncig.cli architecture-native-compose --layouts "%LAYOUTS%" --assembly "%ASSEMBLY%" --templates "%TEMPLATES%" --base "%BASE%" --out "%NATIVE%" --report "%REPORT%" --building-id "%BUILDING%" --streaming-margin 32
 )
 if errorlevel 1 exit /b %ERRORLEVEL%
 
@@ -76,7 +83,7 @@ if "%USE_DECOR%"=="1" (
 if errorlevel 1 exit /b %ERRORLEVEL%
 
 echo.
-echo === NCIG v0.32: native test BUILD COMPLETE ===
+echo === NCIG v0.33: playable interior BUILD COMPLETE ===
 echo Native JSON : %NATIVE%
 echo Build report: %REPORT%
 echo Audit report: %AUDIT%

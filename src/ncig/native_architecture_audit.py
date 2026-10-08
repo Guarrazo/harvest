@@ -56,7 +56,7 @@ def audit_native_architecture(
     building_id: str | None = None,
     decoration: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    template = _mesh_template(templates)
+    template = _mesh_template(templates, allow_schema_fallback=True)
     entity_template = _entity_template(templates)
     layout_map = _layout_by_building(layouts)
     assembly_map = _assembly_by_building(assembly)
@@ -221,6 +221,13 @@ def audit_native_architecture(
         "expected_decoration_entities": len(expected_entity_refs),
         "matched_decoration_entities": len(expected_entity_refs & actual_entity_refs),
         "template_type": template.get("type"),
+        "mesh_schema_mode": (
+            "harvested_worldMeshNode"
+            if isinstance(((templates or {}).get("templates") or {}).get("worldMeshNode"), list)
+            and ((templates or {}).get("templates") or {}).get("worldMeshNode")
+            and not bool(((templates or {}).get("templates") or {}).get("worldMeshNode")[0].get("ncigTemplateMode"))
+            else "upstream_entSpawner_serializer"
+        ),
         "template_uk10": template.get("uk10"),
         "template_uk11": template.get("uk11"),
         "top_level_key_mismatches": key_mismatches,
@@ -233,7 +240,7 @@ def audit_native_architecture(
         "warnings": warnings,
         "passed": not errors,
         "bounds_validation_required": True,
-        "note": "Mesh schema/resources/transforms are checked against the real worldMeshNode template; collisions use the observed entSpawner serializer shape; decoration entities use the real worldEntityNode template. Physical fit and walkability still require in-game validation.",
+        "note": "Mesh schema/resources/transforms are checked against either a harvested worldMeshNode or the upstream entSpawner serializer schema; collisions use the observed entSpawner serializer shape; decoration entities use the public worldEntityNode schema. Physical fit and walkability still require in-game validation.",
     }
 
 

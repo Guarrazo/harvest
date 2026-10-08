@@ -20,13 +20,24 @@ def _load(path: str | Path) -> dict[str, Any]:
     return value
 
 
-def _mesh_template(templates: dict[str, Any] | None) -> dict[str, Any]:
+def _mesh_template(templates: dict[str, Any] | None, *, allow_schema_fallback: bool = True) -> dict[str, Any]:
     if not isinstance(templates, dict):
-        raise ValueError("A real ncig-template-harvest-v1 file is required")
+        raise ValueError("An ncig-template-harvest-v1 dictionary is required (it may be empty in v0.33)")
     pool = (templates.get("templates") or {}).get("worldMeshNode")
     if not isinstance(pool, list) or not pool or not isinstance(pool[0], dict):
-        raise ValueError("The template harvest contains no real worldMeshNode template")
-    base = copy.deepcopy(pool[0])
+        if not allow_schema_fallback:
+            raise ValueError("The template harvest contains no usable worldMeshNode template")
+        # Procedural serializer path. A real harvested node may still override this
+        # when one is available, but it is not required for v0.33.
+        from .reference_nodes import mesh_node
+        base = mesh_node(
+            name="[NCIG TEMPLATE] worldMeshNode",
+            node_ref="$/#NCIG_TEMPLATE_WORLD_MESH",
+            position={"x": 0.0, "y": 0.0, "z": 0.0},
+            mesh_path="base\\environment\\architecture\\common\\int\\int_common_a\\int_common_a_floor_l600_w600_a.mesh",
+        )
+    else:
+        base = copy.deepcopy(pool[0])
     required = ("type", "position", "rotation", "scale", "streamingRefPoint", "data")
     missing = [key for key in required if key not in base]
     if missing:
@@ -162,7 +173,7 @@ def build_native_architecture_export(
     if not base_export.get("sectors"):
         raise ValueError("base export contains no sectors")
 
-    mesh_template = _mesh_template(templates)
+    mesh_template = _mesh_template(templates, allow_schema_fallback=True)
     layouts_map = _layout_by_building(layouts)
     assembly_map = _assembly_by_building(assembly)
     ids = [building_id] if building_id else sorted(set(layouts_map) & set(assembly_map))
@@ -232,11 +243,18 @@ def build_native_architecture_export(
             "primaryRange": mesh_template.get("primaryRange"),
             "secondaryRange": mesh_template.get("secondaryRange"),
             "mesh_template_resource": mesh_template["data"]["mesh"]["DepotPath"].get("$value"),
+            "source_mode": (
+                "harvested_worldMeshNode"
+                if isinstance(((templates or {}).get("templates") or {}).get("worldMeshNode"), list)
+                and ((templates or {}).get("templates") or {}).get("worldMeshNode")
+                and not bool(((templates or {}).get("templates") or {}).get("worldMeshNode")[0].get("ncigTemplateMode"))
+                else "upstream_entSpawner_serializer"
+            ),
         },
         "bounds_validation_required": True,
         "scale_policy": "assembly_scale_only",
         "native_export_generated": True,
-        "note": "Each emitted mesh node is cloned from a real harvested worldMeshNode template; render/export-specific fields are preserved verbatim. Mesh bounds and placement correctness still require in-game validation.",
+        "note": "Mesh nodes use a harvested worldMeshNode when available; otherwise NCIG uses the public entSpawner export schema with exact default render enums. Mesh bounds and placement correctness still require in-game validation.",
     }
     return result, report
 

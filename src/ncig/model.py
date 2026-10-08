@@ -47,6 +47,9 @@ class Room:
     rotation_deg: float = 0.0
     is_start: bool = False
     is_exit: bool = False
+    # Structural v0.28 layouts annotate the reserved vertical core without
+    # changing the public room model required by earlier generators.
+    structural_role: str | None = None
 
 
 @dataclass

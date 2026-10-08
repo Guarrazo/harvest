@@ -428,19 +428,25 @@ def synthesize_schema_node(spec: dict[str, Any], building_id: str, *, assets: di
         resource = _resource_for_spec(spec, assets, "geometry") or _resource_for_spec(spec, assets, "mesh")
         if not resource:
             return None, f"{name}: no .mesh resource available from plan or harvested assets"
-        return None, f"{name}: mesh serializer exists, but a real World Builder mesh template is required for runtime-safe render enum values; harvest one from installed favorites/mods"
+        return mesh_node(
+            name=name,
+            node_ref=ref,
+            position=pos,
+            mesh_path=resource,
+            appearance=str((spec.get("data") or {}).get("appearance") or (spec.get("data") or {}).get("meshAppearance") or "default"),
+            rotation=rot,
+            scale=scale,
+        ), None
 
     if wanted == "worldStaticLightNode":
-        profile = (spec.get("data") or {}).get("lightProfile")
-        if not profile:
-            return None, f"{name}: light serializer exists, but a real World Builder light template is required for runtime-safe enum values; harvest one from installed favorites/mods"
+        profile = (spec.get("data") or {}).get("lightProfile") or {}
         return strip_ncig_metadata(light_node(name=name, node_ref=ref, position=pos, profile=profile, rotation=rot, scale=scale)), None
 
     if wanted == "worldCollisionNode":
         data = spec.get("data") or {}
-        if not data.get("preset") or not data.get("material"):
-            return None, f"{name}: collision serializer exists, but a harvested collision preset/material is required for runtime-safe export"
         size = data.get("size") or {"x": 1.0, "y": 1.0, "z": 1.0}
+        data.setdefault("preset", "Simple Environment Collision")
+        data.setdefault("material", "concrete.physmat")
         return strip_ncig_metadata(collision_node(name=name, node_ref=ref, position=pos, size=size, preset=str(data["preset"]), material=str(data["material"]), rotation=rot, scale=scale)), None
 
     if wanted == "worldAreaShapeNode":

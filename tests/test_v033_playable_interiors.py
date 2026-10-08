@@ -14,6 +14,7 @@ def test_mesh_serializer_matches_entspawner_shape():
     assert node["type"] == "worldMeshNode"
     assert node["uk10"] == 1040
     assert node["data"]["mesh"]["DepotPath"]["$value"].endswith(".mesh")
+    assert "$type" not in node["data"]["mesh"]["DepotPath"]
     assert node["data"]["castLocalShadows"] == "Default"
     assert node["data"]["castRayTracedGlobalShadows"] == "Default"
     assert node["data"]["castRayTracedLocalShadows"] == "Default"

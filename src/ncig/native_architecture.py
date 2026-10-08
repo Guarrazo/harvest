@@ -22,14 +22,13 @@ def _load(path: str | Path) -> dict[str, Any]:
 
 def _mesh_template(templates: dict[str, Any] | None, *, allow_schema_fallback: bool = True) -> dict[str, Any]:
     if not isinstance(templates, dict):
-        raise ValueError("A real ncig-template-harvest-v1 file is required")
+        raise ValueError("An ncig-template-harvest-v1 dictionary is required (it may be empty in v0.33)")
     pool = (templates.get("templates") or {}).get("worldMeshNode")
     if not isinstance(pool, list) or not pool or not isinstance(pool[0], dict):
         if not allow_schema_fallback:
             raise ValueError("The template harvest contains no usable worldMeshNode template")
-        # Reference serializer fallback. This is deliberately marked as a fallback
-        # because exporter-specific render enum values are not known until a real
-        # worldMeshNode is harvested from a sector/WB export.
+        # Procedural serializer path. A real harvested node may still override this
+        # when one is available, but it is not required for v0.33.
         from .reference_nodes import mesh_node
         base = mesh_node(
             name="[NCIG TEMPLATE] worldMeshNode",

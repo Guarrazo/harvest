@@ -20,7 +20,7 @@ def _load(path: str | Path) -> dict[str, Any]:
     return value
 
 
-def _mesh_template(templates: dict[str, Any] | None, *, allow_schema_fallback: bool = False) -> dict[str, Any]:
+def _mesh_template(templates: dict[str, Any] | None, *, allow_schema_fallback: bool = True) -> dict[str, Any]:
     if not isinstance(templates, dict):
         raise ValueError("A real ncig-template-harvest-v1 file is required")
     pool = (templates.get("templates") or {}).get("worldMeshNode")
@@ -174,7 +174,7 @@ def build_native_architecture_export(
     if not base_export.get("sectors"):
         raise ValueError("base export contains no sectors")
 
-    mesh_template = _mesh_template(templates)
+    mesh_template = _mesh_template(templates, allow_schema_fallback=True)
     layouts_map = _layout_by_building(layouts)
     assembly_map = _assembly_by_building(assembly)
     ids = [building_id] if building_id else sorted(set(layouts_map) & set(assembly_map))
@@ -244,11 +244,12 @@ def build_native_architecture_export(
             "primaryRange": mesh_template.get("primaryRange"),
             "secondaryRange": mesh_template.get("secondaryRange"),
             "mesh_template_resource": mesh_template["data"]["mesh"]["DepotPath"].get("$value"),
+            "source_mode": "harvested_worldMeshNode" if (templates or {}).get("templates", {}).get("worldMeshNode") else "upstream_entSpawner_serializer",
         },
         "bounds_validation_required": True,
         "scale_policy": "assembly_scale_only",
         "native_export_generated": True,
-        "note": "Each emitted mesh node is cloned from a real harvested worldMeshNode template; render/export-specific fields are preserved verbatim. Mesh bounds and placement correctness still require in-game validation.",
+        "note": "Mesh nodes use a harvested worldMeshNode when available; otherwise NCIG uses the public entSpawner export schema with exact default render enums. Mesh bounds and placement correctness still require in-game validation.",
     }
     return result, report
 

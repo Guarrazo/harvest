@@ -9,11 +9,7 @@ set "SECTORS=C:\CyberpunkExports\sectors"
 set "BASE=examples\ncig_probe_exported.json"
 
 if defined EXPORT if exist "%EXPORT%" set "BASE=%EXPORT%"
-if not exist "%SECTORS%" (
-  echo NCIG v0.33: exported streamingsector directory not found:
-  echo   %SECTORS%
-  exit /b 2
-)
+
 
 set "LAYOUTS=build\generated_auto\layouts_v0280.json"
 if not exist "%LAYOUTS%" set "LAYOUTS=build\generated_auto\layouts.json"

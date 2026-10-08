@@ -20,8 +20,8 @@ SOURCE_MANIFEST = {
 
 SUPPORTED_SCHEMAS = {
     "worldEntityNode": "exact",
-    "worldMeshNode": "exact-shape-template-preferred",
-    "worldStaticLightNode": "exact-shape-template-preferred",
+    "worldMeshNode": "exact-upstream-entSpawner-export-shape",
+    "worldStaticLightNode": "upstream-export-shape-with-known-enums",
     "worldCollisionNode": "exact-shape-template-preferred",
     "worldAreaShapeNode": "exact-shape-template-preferred",
 }
@@ -153,12 +153,12 @@ def mesh_node(
     exporter revision, so callers should supply a harvested render_profile where possible.
     """
     profile = {
-        "castLocalShadows": None,
-        "castRayTracedGlobalShadows": None,
-        "castRayTracedLocalShadows": None,
-        "castShadows": None,
-        "occluderType": None,
-        "windImpulseEnabled": 0,
+        "castLocalShadows": "Default",
+        "castRayTracedGlobalShadows": "Default",
+        "castRayTracedLocalShadows": "Default",
+        "castShadows": "Default",
+        "occluderType": "Default",
+        "windImpulseEnabled": 1,
     }
     if render_profile:
         profile.update(copy.deepcopy(render_profile))
@@ -171,7 +171,7 @@ def mesh_node(
         scale=scale,
         primary_range=80.0,
         secondary_range=120.0,
-        uk10=1056,
+        uk10=1040,
         uk11=512,
     )
     out["data"] = {
@@ -179,9 +179,53 @@ def mesh_node(
         "meshAppearance": cname(appearance),
         **profile,
     }
-    out["ncigSchema"] = "worldMeshNode-export-shape"
-    if any(v is None for k, v in profile.items() if k != "windImpulseEnabled"):
-        out.setdefault("ncigWarnings", []).append("mesh render enum defaults are unresolved; use harvested World Builder mesh template for runtime-safe values")
+    out["ncigSchema"] = "worldMeshNode-entSpawner-export-v1"
+    return out
+
+
+def interior_trigger_node(
+    *,
+    name: str,
+    node_ref: str,
+    markers: list[tuple[float, float, float]],
+    height: float,
+    primary_range: float = 80.0,
+    secondary_range: float = 120.0,
+) -> dict[str, Any]:
+    """Build the World Builder Interior Trigger Area export shape."""
+    if len(markers) < 3:
+        raise ValueError("interior_trigger_node requires at least three markers")
+    cx = sum(p[0] for p in markers) / len(markers)
+    cy = sum(p[1] for p in markers) / len(markers)
+    cz = sum(p[2] for p in markers) / len(markers)
+    out = base_node(
+        node_type="worldTriggerAreaNode",
+        name=name,
+        node_ref=node_ref,
+        position={"x": cx, "y": cy, "z": cz},
+        primary_range=primary_range,
+        secondary_range=secondary_range,
+        uk10=1056,
+        uk11=512,
+    )
+    out["data"] = {
+        "outline": {
+            "Data": {
+                "$type": "AreaShapeOutline",
+                "buffer": area_outline_base64((cx, cy, cz), markers, height),
+            }
+        },
+        "notifiers": [{
+            "Data": {
+                "$type": "worldInteriorAreaNotifier",
+                "gameRestrictionIDs": [],
+                "setTier2": 0,
+                "treatAsInterior": 1,
+                "includeChannels": "TC_Player",
+            }
+        }],
+    }
+    out["ncigSchema"] = "worldTriggerAreaNode-interior-export-v1"
     return out
 
 

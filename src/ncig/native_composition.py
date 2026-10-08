@@ -11,47 +11,59 @@ from .io import write_json
 from .native_architecture import _load, _q_yaw, build_native_architecture_export
 from .native_collision import build_room_collisions
 from .object_spawner import clean_native_export
+from .reference_nodes import entity_node, interior_trigger_node
 
 FORMAT = "ncig-native-composition-v1"
 
 
-def _entity_template(templates: dict[str, Any]) -> dict[str, Any]:
-    pool = (templates.get("templates") or {}).get("worldEntityNode")
-    if not isinstance(pool, list) or not pool or not isinstance(pool[0], dict):
-        raise ValueError("template harvest contains no real worldEntityNode template")
-    t = copy.deepcopy(pool[0])
-    if t.get("type") != "worldEntityNode":
-        raise ValueError("worldEntityNode template has unexpected type")
-    data = t.get("data")
-    if not isinstance(data, dict) or not isinstance(data.get("entityTemplate"), dict):
-        raise ValueError("worldEntityNode template has no data.entityTemplate")
-    return t
-
-
-def _set_entity_resource(node: dict[str, Any], resource: str) -> None:
-    node["data"]["entityTemplate"]["DepotPath"]["$value"] = str(resource).replace("/", "\\")
-
-
-def _materialize_entity(template: dict[str, Any], placement: dict[str, Any], building_id: str) -> dict[str, Any]:
+def _materialize_entity(placement: dict[str, Any], building_id: str) -> dict[str, Any]:
     resource = str(placement.get("resource", ""))
     if not resource.lower().endswith(".ent"):
         raise ValueError(f"decoration {placement.get('id')!r} has no .ent resource")
-    out = copy.deepcopy(template)
-    name = str(placement.get("id") or "entity")
     pos = placement.get("position") or {}
-    out["name"] = f"[NCIG] {name}"
-    out["nodeRef"] = f"$/#{building_id}_{name}"
-    out["position"] = {"x": float(pos["x"]), "y": float(pos["y"]), "z": float(pos["z"]), "w": 0}
-    out["streamingRefPoint"] = {"x": float(pos["x"]), "y": float(pos["y"]), "z": float(pos["z"]), "w": 0}
-    out["rotation"] = _q_yaw(float(placement.get("rotation_deg", 0.0)))
-    scale = placement.get("scale")
-    if isinstance(scale, dict) and all(k in scale for k in ("x", "y", "z")):
-        out["scale"] = {"x": float(scale["x"]), "y": float(scale["y"]), "z": float(scale["z"])}
-    _set_entity_resource(out, resource)
-    appearance = placement.get("appearance")
-    if appearance and isinstance(out.get("data", {}).get("appearanceName"), dict):
-        out["data"]["appearanceName"]["$value"] = str(appearance)
-    return out
+    if not all(k in pos for k in ("x", "y", "z")):
+        raise ValueError(f"decoration {placement.get('id')!r} has no complete position")
+    data = placement.get("data") if isinstance(placement.get("data"), dict) else {}
+    appearance = str(data.get("appearanceName") or placement.get("appearance") or "default")
+    return entity_node(
+        name=f"[NCIG] {placement.get('id') or 'entity'}",
+        node_ref=f"$/#{building_id}_{placement.get('id') or 'entity'}",
+        position={"x": float(pos["x"]), "y": float(pos["y"]), "z": float(pos["z"])},
+        entity_path=resource,
+        appearance=appearance,
+        rotation=_q_yaw(float(placement.get("rotation_deg", 0.0))),
+        scale=placement.get("scale") if isinstance(placement.get("scale"), dict) else None,
+    )
+
+
+def _interior_trigger_for_floor(layout: dict[str, Any], floor: int) -> dict[str, Any]:
+    building = layout.get("building") or {}
+    width = float(building.get("width_m", 0.0) or 0.0)
+    depth = float(building.get("depth_m", 0.0) or 0.0)
+    if width <= 0.0 or depth <= 0.0:
+        raise ValueError(f"building {building.get('id')!r} has invalid footprint for interior trigger")
+    z = float((building.get("position") or {}).get("z", 0.0)) + floor * 3.2 + 0.05
+    x = float((building.get("position") or {}).get("x", 0.0))
+    y = float((building.get("position") or {}).get("y", 0.0))
+    yaw = math.radians(float(building.get("yaw_deg", 0.0)))
+    c, s = math.cos(yaw), math.sin(yaw)
+    local = [
+        (-width * 0.5, -depth * 0.5),
+        ( width * 0.5, -depth * 0.5),
+        ( width * 0.5,  depth * 0.5),
+        (-width * 0.5,  depth * 0.5),
+    ]
+    markers = []
+    for lx, ly in local:
+        markers.append((x + c * lx - s * ly, y + s * lx + c * ly, z))
+    bid = str(building.get("id") or "building")
+    ref = f"$/#{bid}_F{floor + 1:02d}_INTERIOR_TRIGGER"
+    return interior_trigger_node(
+        name=f"[NCIG INTERIOR] {bid}_F{floor + 1:02d}",
+        node_ref=ref,
+        markers=markers,
+        height=3.0,
+    )
 
 
 def _expand_sector_bounds(sector: dict[str, Any], margin: float) -> None:
@@ -99,7 +111,6 @@ def build_native_composition(
         layouts, assembly, templates, base_export, building_id=building_id
     )
     ids = mesh_report["building_ids"]
-    ent_template = _entity_template(templates) if decoration and _decoration_for_building(decoration, ids[0]) else None
     col_template = None
     pool = (templates.get("templates") or {}).get("worldCollisionNode")
     if isinstance(pool, list) and pool and isinstance(pool[0], dict):
@@ -134,10 +145,14 @@ def build_native_composition(
                 for node in by_coll_floor.get(floor, []):
                     sector.setdefault("nodes", []).append(node)
                     collision_count += 1
-            if ent_template:
-                for p in decor_by_floor.get(floor, []):
-                    sector.setdefault("nodes", []).append(_materialize_entity(ent_template, p, bid))
-                    decor_count += 1
+            for p in decor_by_floor.get(floor, []):
+                sector.setdefault("nodes", []).append(_materialize_entity(p, bid))
+                decor_count += 1
+            # Mark each generated floor as a gameplay interior. This supplies the
+            # Interior notifier while keeping the generated footprint aligned with
+            # the same building bounds used by the structural layout.
+            trigger = _interior_trigger_for_floor(layout, floor)
+            sector.setdefault("nodes", []).append(trigger)
         collision_meta.append(cm)
 
     native["name"] = f"ncig_composition_{'_'.join(ids)}"
@@ -148,12 +163,13 @@ def build_native_composition(
         "mesh_nodes": int(mesh_report.get("emitted_node_count", 0)),
         "collision_nodes": collision_count,
         "decoration_nodes": decor_count,
+        "interior_trigger_nodes": len(ids) and sum(len([s for s in native.get("sectors", []) if str(s.get("name","")).startswith(f"{bid}_")]) for bid in ids) or 0,
         "streaming_margin_m": float(streaming_margin_m),
         "include_collisions": bool(include_collisions),
         "decoration_supplied": bool(decoration),
         "collision_policy": "continuous_floor_per_floor_plus_room_shell_walls_with_door_openings" if include_collisions else "disabled",
         "native_export_generated": True,
-        "note": "Mesh nodes are cloned from the real worldMeshNode template; collision boxes use the observed entSpawner serializer shape; decoration nodes use the real worldEntityNode template. Physical fit still requires in-game validation.",
+        "note": "Mesh, entity and interior-trigger nodes use public entSpawner export shapes; collisions use the observed collision serializer shape. Physical fit and walkability still require in-game validation.",
     }
     return clean, report
 

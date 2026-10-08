@@ -163,7 +163,11 @@ def build_native_composition(
         "mesh_nodes": int(mesh_report.get("emitted_node_count", 0)),
         "collision_nodes": collision_count,
         "decoration_nodes": decor_count,
-        "interior_trigger_nodes": len(ids) and sum(len([s for s in native.get("sectors", []) if str(s.get("name","")).startswith(f"{bid}_")]) for bid in ids) or 0,
+        "interior_trigger_nodes": sum(
+            1 for s in native.get("sectors", []) if isinstance(s, dict)
+            for n in s.get("nodes", []) or []
+            if isinstance(n, dict) and n.get("type") == "worldTriggerAreaNode"
+        ),
         "streaming_margin_m": float(streaming_margin_m),
         "include_collisions": bool(include_collisions),
         "decoration_supplied": bool(decoration),

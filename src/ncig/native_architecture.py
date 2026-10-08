@@ -244,7 +244,13 @@ def build_native_architecture_export(
             "primaryRange": mesh_template.get("primaryRange"),
             "secondaryRange": mesh_template.get("secondaryRange"),
             "mesh_template_resource": mesh_template["data"]["mesh"]["DepotPath"].get("$value"),
-            "source_mode": "harvested_worldMeshNode" if (templates or {}).get("templates", {}).get("worldMeshNode") else "upstream_entSpawner_serializer",
+            "source_mode": (
+                "harvested_worldMeshNode"
+                if isinstance(((templates or {}).get("templates") or {}).get("worldMeshNode"), list)
+                and ((templates or {}).get("templates") or {}).get("worldMeshNode")
+                and not bool(((templates or {}).get("templates") or {}).get("worldMeshNode")[0].get("ncigTemplateMode"))
+                else "upstream_entSpawner_serializer"
+            ),
         },
         "bounds_validation_required": True,
         "scale_policy": "assembly_scale_only",
